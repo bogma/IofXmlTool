@@ -7,21 +7,16 @@ open Parsing
 open Result
 open FSharp.Data
 
-let rec getFiles dir pattern =
-    seq { yield! Directory.EnumerateFiles(dir, pattern)
-          for d in Directory.EnumerateDirectories(dir) do
-              yield! getFiles d pattern }
-
-let flatten x =
+let flattenold x =
     [for event, c in x do
         for category, r in c do
             for pr1, pr2, pr3, pr4, pr5 in r do
                 yield event, category, pr1, pr2, pr3, pr4, pr5]
-
-let flattenSeqOfSeq outer =
-    seq { for inner in outer do
-             for s in inner do
-                yield s }
+let flatten x =
+    [for event, c in x do
+        for category, prrSeq in c do
+           for prr in prrSeq do
+               yield event, category, prr]
 
 let calcPoints pos =
     match pos with
@@ -52,6 +47,13 @@ let buildEventResult (inputFile : string) =
         else 1
 
     let calcSingleResult (item : ParsedResult) i =
+//        { 
+//            OrganisationId = item.OrganisationId;
+//            Name = item.GivenName + " " + item.FamilyName;
+//            Points = calcPoints i * eventMultiplier;
+//            Time = item.Time;
+//            Position = i;
+//        }
         (item.OrganisationId, item.GivenName + " " + item.FamilyName, calcPoints i * eventMultiplier, item.Time, i)
     
     let r = parseResultXml inputFile
@@ -84,7 +86,7 @@ let main argv =
     let results =
         competitions
         |> Seq.map buildEventResult
-        |> flatten
+        |> flattenold
         |> Seq.map (fun (a, catId, c, name, e, f, g) -> (a, catId, c, name, e, f, g, catId.ToString() + "~" + name))
         |> Seq.groupBy (fun (_, _, _, name, _, _, _, gb) -> gb)
         |> Seq.map (fun pair ->
@@ -100,12 +102,30 @@ let main argv =
                             |> Seq.truncate takeBest
                             |> Seq.sumBy (fun (_, _, _, _, points, _, _, _) -> points)
                         name, catId, orgId, s, r)
-
+//    let results =
+//        competitions
+//        |> Seq.map buildEventResult
+//        |> flatten
+//        |> Seq.map (fun (a, catId, prr) -> (a, catId, prr, catId.ToString() + "~" + prr.Name))
+//        |> Seq.groupBy (fun (_, _, _, gb) -> gb)
+//        |> Seq.map (fun pair ->
+//                        let r = snd pair
+//                                    |> Seq.map (fun (a, b, c, _) -> (b, c))
+//                        let catId, prr =
+//                            r
+//                            |> Seq.take 1
+//                            |> Seq.exactlyOne
+//                        let s = 
+//                            r
+//                            |> Seq.sortBy (fun (_, prr) -> -prr.Points)
+//                            |> Seq.truncate takeBest
+//                            |> Seq.sumBy (fun (_, prr) -> prr.Points)
+//                        prr.Name, catId, prr.OrganisationId, s, r)
     //results |> Seq.iter (printfn "%A")
 
     let catResults =
         results
-        |> Seq.groupBy (fun (_, i, _, _, _) -> i)
+        |> Seq.groupBy (fun (_, catId, _, _, _) -> catId)
 
     let outputFile = "../../../../ol/cup_" + XmlConfig.GetSample().Cup.Year.ToString() + ".html"
     File.WriteAllText(outputFile,  buildResultHtml catResults)

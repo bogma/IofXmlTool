@@ -64,6 +64,10 @@
     <Content Include="packages.config" />
     <None Include="datastandard_IOF_30.xsd" />
     <None Include="TODOs.txt" />
+    <Content Include="resources/config.xml" />
+    <None Include="resources/ResultListSampleData.csv" />
+    <None Include="resources/ResultListSampleData.html" />
+    <Content Include="resources/ResultListSampleData.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

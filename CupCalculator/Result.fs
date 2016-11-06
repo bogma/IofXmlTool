@@ -1,6 +1,7 @@
 ﻿module Result
 
 open CupTypes
+open Helper
 
 let getClubName id =
     let n = XmlConfig.GetSample().Organisations
@@ -44,13 +45,21 @@ let printDetailedResultRow results =
 let printResult classHeader catResult =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""
     let events = XmlConfig.GetSample().Cup.NumberOfEvents
-    let part2 = [1..events] |> List.map buildRankingHeader |> List.fold (fun str x -> str + sprintf "%s" x) ""
+    let part2 = [1..events] |> List.map buildRankingHeader |> combineListToString
     let part3 = "</tr>"
-    let sRes = catResult
-               |> Seq.sortBy (fun (_, _, _, total, _) -> -total) 
-               |> Seq.mapi (fun i (name, cat, club, total, singleResults) ->
-                            let n = name
-                            let t = total
+
+    let totalGrouped = catResult
+                        |> Seq.sortBy (fun (_, _, _, total, _) -> -total)
+                        |> Seq.groupBy (fun (_, _, _, total, _) -> total)
+    let totalPositions = getPositionSeq 1 (getIntervalList totalGrouped)
+
+    let res = (totalPositions, totalGrouped) 
+                   ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> i1, item))
+                   |> flattenSeqOfSeq
+
+    let sRes = res
+               |> Seq.mapi (fun i (rank, item) ->
+                            let name, cat, club, total, singleResults = item
                             let c = getClubName club
                             let rowClass = 
                                 if (i % 2 = 0) then "cal_out_white"
@@ -60,10 +69,11 @@ let printResult classHeader catResult =
                             let r3 = """</b></div><div style="overflow:hidden;">"""
                             let r4 = """</div></td><td align="center" style="border-right:1px solid #888;"><div style="overflow:hidden;font-weight:bold;">"""
                             let r5 = """</div></td>"""
-                            let details = printDetailedResultRow singleResults |> Seq.fold (fun str x -> str + x) ""
+                            let details = printDetailedResultRow singleResults |> combineListToString
                             let r6 = "</tr>"
-                            r1 + (i+1).ToString() + r2 + n + r3 + c + r4 + t.ToString() + r5 + details + r6)
+                            r1 + rank.ToString() + r2 + name + r3 + c + r4 + total.ToString() + r5 + details + r6)
                 |> Seq.fold (fun str x -> str + x) ""
+
     let part4 = """</tbody></table><br/><br/><br/></div>"""
     part1 + part2 + part3 + sRes + part4
 
@@ -72,7 +82,7 @@ let buildResultHtml catResults =
     let maxEvents = XmlConfig.GetSample().Cup.NumberOfEvents
     let htmlOpen = "<html>"
     let htmlClose = "</html>"
-    let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./result-template_files/default.css" rel="stylesheet" type="text/css" /><title>""" + XmlConfig.GetSample().Cup.Name + """</title></head>"""
+    let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + XmlConfig.GetSample().Cup.Name + """</title></head>"""
     let bodyTop = """<body><h1>Rangliste</h1><br/><br/><div>Gewertet werden die <strong>""" + takeBest.ToString() + """</strong> besten Ergebnisse von <strong>""" + maxEvents.ToString() + """</strong>.</div><br/><br/><br/><br/>"""
     let bodyBottom = """<br/><div>(c) """ + System.DateTime.Now.Year.ToString() + """ by solv.at | Daten: ANNE / oefol.at und der veranstaltende Verein</div><br/><div>webmaster@solv.at</div><div>Erstellt: """ + System.DateTime.Now.ToString("R") + """</div></body>"""
 
@@ -85,8 +95,5 @@ let buildResultHtml catResults =
                                 |> Seq.find(fun (catId, res) -> catId = cfg.Id)
             yield printResult classHeader catResult ]
 
-    let catResString =
-        catRes |> List.fold (fun str x -> str + x) ""
+    let catResString = catRes |> combineListToString
     htmlOpen + head + bodyTop + catResString + bodyBottom + htmlClose
-
-

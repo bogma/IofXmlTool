@@ -32,7 +32,7 @@ let parseResultXml (uri : string) : list<ParsedResult>=
                     Status = pr.Result.Status
                 }
             yield r]
-
+(*
 let toSeconds (timeString : string) =
     let z1 = timeString.Split([|":"|], System.StringSplitOptions.None) |> Array.rev
     match z1.Length with
@@ -80,3 +80,4 @@ let parseResultHtml (uri : string) : list<ParsedResult>=
                     Status = "OK"
                 }
             yield r]
+*)
