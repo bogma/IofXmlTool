@@ -7,11 +7,6 @@ open Parsing
 open Result
 open FSharp.Data
 
-let flattenold x =
-    [for event, c in x do
-        for category, r in c do
-            for pr1, pr2, pr3, pr4, pr5 in r do
-                yield event, category, pr1, pr2, pr3, pr4, pr5]
 let flatten x =
     [for event, c in x do
         for category, prrSeq in c do
@@ -47,14 +42,13 @@ let buildEventResult (inputFile : string) =
         else 1
 
     let calcSingleResult (item : ParsedResult) i =
-//        { 
-//            OrganisationId = item.OrganisationId;
-//            Name = item.GivenName + " " + item.FamilyName;
-//            Points = calcPoints i * eventMultiplier;
-//            Time = item.Time;
-//            Position = i;
-//        }
-        (item.OrganisationId, item.GivenName + " " + item.FamilyName, calcPoints i * eventMultiplier, item.Time, i)
+        { 
+            OrganisationId = item.OrganisationId;
+            Name = item.GivenName + " " + item.FamilyName;
+            Points = calcPoints i * eventMultiplier;
+            Time = item.Time;
+            Position = i;
+        }
     
     let r = parseResultXml inputFile
                 |> List.filter (fun a -> List.exists (fun org -> org = a.OrganisationId) orgCfg)
@@ -88,42 +82,25 @@ let main argv =
     let results =
         competitions
         |> Seq.map buildEventResult
-        |> flattenold
-        |> Seq.map (fun (a, catId, c, name, e, f, g) -> (a, catId, c, name, e, f, g, catId.ToString() + "~" + name))
-        |> Seq.groupBy (fun (_, _, _, name, _, _, _, gb) -> gb)
+        |> flatten
+        |> Seq.map (fun (event, category, prr) -> (event, category, prr, category.ToString() + "~" + prr.Name))
+        |> Seq.groupBy (fun (_, _, _, gb) -> gb)
         |> Seq.map (fun pair ->
                         let r = snd pair
-                                    |> Seq.map (fun (a, b, c, d, e, f, g, _) -> (a, b, c, d, e, f, g))
-                        let _, catId, orgId, name, _, _, _, _ =
-                            snd pair
+                                    |> Seq.map (fun (a, b, c, _) -> (a, b, c))
+                        let _, catId, prr =
+                            r
                             |> Seq.take 1
                             |> Seq.exactlyOne
-                        let s = 
-                            snd pair
-                            |> Seq.sortBy (fun (_, _, _, _, points, _, _, _) -> -points)
+                        let countingResults =
+                            r
+                            |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
                             |> Seq.truncate takeBest
-                            |> Seq.sumBy (fun (_, _, _, _, points, _, _, _) -> points)
-                        name, catId, orgId, s, r)
-//    let results =
-//        competitions
-//        |> Seq.map buildEventResult
-//        |> flatten
-//        |> Seq.map (fun (a, catId, prr) -> (a, catId, prr, catId.ToString() + "~" + prr.Name))
-//        |> Seq.groupBy (fun (_, _, _, gb) -> gb)
-//        |> Seq.map (fun pair ->
-//                        let r = snd pair
-//                                    |> Seq.map (fun (a, b, c, _) -> (b, c))
-//                        let catId, prr =
-//                            r
-//                            |> Seq.take 1
-//                            |> Seq.exactlyOne
-//                        let s = 
-//                            r
-//                            |> Seq.sortBy (fun (_, prr) -> -prr.Points)
-//                            |> Seq.truncate takeBest
-//                            |> Seq.sumBy (fun (_, prr) -> prr.Points)
-//                        prr.Name, catId, prr.OrganisationId, s, r)
-    //results |> Seq.iter (printfn "%A")
+
+                        let sum = 
+                            countingResults
+                            |> Seq.sumBy (fun (_, _, prr) -> prr.Points)
+                        prr.Name, catId, prr.OrganisationId, sum, r)
 
     let catResults =
         results
@@ -132,6 +109,7 @@ let main argv =
     let outputFileName = "cup_" + XmlConfig.GetSample().Cup.Year.ToString() + ".html"
     let outputFile = Path.Combine(inputPath, outputFileName) 
     File.WriteAllText(outputFile,  buildResultHtml catResults)
+    File.Copy("./resources/default.css", Path.Combine(inputPath, "default.css"), true)
 
     printf "output written to %s" outputFile
 

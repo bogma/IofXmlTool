@@ -1,2 +1,2 @@
 ﻿* strikethrough results that are not counted
-* position numbers when points are equal
+

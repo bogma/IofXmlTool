@@ -36,11 +36,11 @@ let printDetailedResultRow results =
     let events = XmlConfig.GetSample().Cup.NumberOfEvents
     let races = [1..events] |> List.map (fun i -> "SC" + i.ToString("D2") + "_" + XmlConfig.GetSample().Cup.Year.ToString())
     [ for r in races do
-          let p = results |> Seq.filter (fun (file, _, _, _, _, _, _) -> file = r)
+          let p = results |> Seq.filter (fun (file, _, _) -> file = r)
           if Seq.isEmpty p then yield "<td/>"
           else 
-            let _, _, _, _, points, time, pos = p |> Seq.take 1 |> Seq.exactlyOne
-            yield printSingleDetailedResult points time pos ]
+            let _, _, prr = p |> Seq.take 1 |> Seq.exactlyOne
+            yield printSingleDetailedResult prr.Points prr.Time prr.Position ]
 
 let printResult classHeader catResult =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""
