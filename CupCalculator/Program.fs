@@ -96,11 +96,18 @@ let main argv =
                             r
                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
                             |> Seq.truncate takeBest
-
+                        let x =
+                            r
+                            |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
+                            |> Seq.mapi (fun i (a, b, c) -> 
+                                            let counts =
+                                                if i < takeBest then true
+                                                else false
+                                            (a, b, c, counts))
                         let sum = 
                             countingResults
                             |> Seq.sumBy (fun (_, _, prr) -> prr.Points)
-                        prr.Name, catId, prr.OrganisationId, sum, r)
+                        prr.Name, catId, prr.OrganisationId, sum, x)
 
     let catResults =
         results

@@ -23,9 +23,10 @@ let formatSeconds2Time time =
         else ""
     h + ts.ToString(@"mm\:ss")
 
-let printSingleDetailedResult points time pos =
-//<div style="overflow:hidden;text-decoration:line-through;">87,51</div>
-    let p1 = """<td align="center"><div style="overflow:hidden">""" // + points i.e 100,00
+let printSingleDetailedResult points time pos counts =
+    let p1 = 
+        if counts then """<td align="center"><div style="overflow:hidden">"""
+        else """<td align="center"><div style="overflow:hidden;text-decoration:line-through;">""" // + points i.e 100,00
     let p2 = """</div><div class="time" style="overflow:hidden">""" // + time (pos) i.e 45:29 (1)
     let p3 = """</div></td>"""
     let tsString = formatSeconds2Time time
@@ -36,11 +37,11 @@ let printDetailedResultRow results =
     let events = XmlConfig.GetSample().Cup.NumberOfEvents
     let races = [1..events] |> List.map (fun i -> "SC" + i.ToString("D2") + "_" + XmlConfig.GetSample().Cup.Year.ToString())
     [ for r in races do
-          let p = results |> Seq.filter (fun (file, _, _) -> file = r)
+          let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
           if Seq.isEmpty p then yield "<td/>"
           else 
-            let _, _, prr = p |> Seq.take 1 |> Seq.exactlyOne
-            yield printSingleDetailedResult prr.Points prr.Time prr.Position ]
+            let _, _, prr, counts = p |> Seq.take 1 |> Seq.exactlyOne
+            yield printSingleDetailedResult prr.Points prr.Time prr.Position counts ]
 
 let printResult classHeader catResult =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""
