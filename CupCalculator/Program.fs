@@ -76,12 +76,14 @@ let buildEventResult (inputFile : string) =
 [<EntryPoint>]
 let main argv =
 
+    let inputPath = argv.[0]
+
     let takeBest = XmlConfig.GetSample().Cup.TakeBest
     let maxEvents = XmlConfig.GetSample().Cup.NumberOfEvents
 
     let competitions =
-        getFiles "../../../../ol/data" "*SC*.xml"
-        //getFiles "../../../../ol/data" "*SC*.csv"
+        getFiles inputPath "*SC*.xml"
+        //getFiles inputPath "*SC*.csv"
 
     let results =
         competitions
@@ -127,7 +129,8 @@ let main argv =
         results
         |> Seq.groupBy (fun (_, catId, _, _, _) -> catId)
 
-    let outputFile = "../../../../ol/cup_" + XmlConfig.GetSample().Cup.Year.ToString() + ".html"
+    let outputFileName = "cup_" + XmlConfig.GetSample().Cup.Year.ToString() + ".html"
+    let outputFile = Path.Combine(inputPath, outputFileName) 
     File.WriteAllText(outputFile,  buildResultHtml catResults)
 
     printf "output written to %s" outputFile

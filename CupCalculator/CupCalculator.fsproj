@@ -25,6 +25,7 @@
     <DocumentationFile>bin\Debug\CupCalculator.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
+    <StartArguments>"C:/ol/data"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
