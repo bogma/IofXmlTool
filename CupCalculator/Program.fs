@@ -4,6 +4,7 @@ open System.Xml.Linq
 open CupTypes
 open Helper
 open Parsing
+open ProgramSettings
 open Result
 open FSharp.Data
 
@@ -33,12 +34,12 @@ let calcPoints pos =
     | _ -> 0
 
 let buildEventResult (inputFile : string) =
-    let clCfg = XmlConfig.GetSample().Classes |> Array.toList |> List.map (fun x -> x.Id)
-    let orgCfg = XmlConfig.GetSample().Organisations  |> Array.toList |> List.map (fun x -> x.Id)
+    
     let fileName = Path.GetFileNameWithoutExtension(inputFile)
     let eventMultiplier = 
-        let s = fileName.Substring(2, 2).AsInteger()
-        if XmlConfig.GetSample().Cup.Event.Num = s then XmlConfig.GetSample().Cup.Event.Multiply
+        let p = fileName.IndexOf("_")
+        let s = fileName.Substring(p-2, 2).AsInteger()
+        if !eventProps |> List.exists (fun x -> x.Num = s) then !eventProps |> List.filter (fun x -> x.Num = s) |> List.map (fun x -> x.Multiply) |> List.head
         else 1
 
     let calcSingleResult (item : ParsedResult) i =
@@ -51,8 +52,8 @@ let buildEventResult (inputFile : string) =
         }
     
     let r = parseResultXml inputFile
-                |> List.filter (fun a -> List.exists (fun org -> org = a.OrganisationId) orgCfg)
-                |> List.filter (fun a -> List.exists (fun cl -> cl = a.ClassId) clCfg)
+                |> List.filter (fun a -> List.exists (fun org -> org = a.OrganisationId) !orgCfgIds)
+                |> List.filter (fun a -> List.exists (fun cl -> cl = a.ClassId) !classCfgIds)
                 |> List.filter (fun a -> a.Status = "OK")
                 |> Seq.groupBy (fun i -> i.ClassId)
                 |> Seq.map (fun pair ->
@@ -71,12 +72,21 @@ let buildEventResult (inputFile : string) =
 let main argv =
 
     let inputPath = argv.[0]
+    let configFile = argv.[1]
 
-    let takeBest = XmlConfig.GetSample().Cup.TakeBest
-    let maxEvents = XmlConfig.GetSample().Cup.NumberOfEvents
+    let Config = XmlConfig.Load(Path.Combine(inputPath, configFile))
+    cupName := Config.Cup.Name 
+    takeBest := Config.Cup.TakeBest
+    maxEvents := Config.Cup.NumberOfEvents
+    classCfg := Config.Classes  |> Array.toList
+    classCfgIds := Config.Classes |> Array.toList |> List.map (fun x -> x.Id)
+    orgCfg := Config.Organisations  |> Array.toList
+    orgCfgIds := Config.Organisations  |> Array.toList |> List.map (fun x -> x.Id)
+    eventProps := Config.Cup.Events |> Array.toList
+    year := Config.Cup.Year
 
     let competitions =
-        getFiles inputPath "*SC*.xml"
+        getFiles inputPath "*SC*_2016.xml"
         //getFiles inputPath "*SC*.csv"
 
     let results =
@@ -95,13 +105,13 @@ let main argv =
                         let countingResults =
                             r
                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
-                            |> Seq.truncate takeBest
+                            |> Seq.truncate !takeBest
                         let x =
                             r
                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
                             |> Seq.mapi (fun i (a, b, c) -> 
                                             let counts =
-                                                if i < takeBest then true
+                                                if i < !takeBest then true
                                                 else false
                                             (a, b, c, counts))
                         let sum = 
@@ -113,7 +123,7 @@ let main argv =
         results
         |> Seq.groupBy (fun (_, catId, _, _, _) -> catId)
 
-    let outputFileName = "cup_" + XmlConfig.GetSample().Cup.Year.ToString() + ".html"
+    let outputFileName = "cup_" + (!year).ToString() + ".html"
     let outputFile = Path.Combine(inputPath, outputFileName) 
     File.WriteAllText(outputFile,  buildResultHtml catResults)
     File.Copy("./resources/default.css", Path.Combine(inputPath, "default.css"), true)

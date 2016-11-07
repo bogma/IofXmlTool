@@ -1,7 +1,8 @@
 <CupConfiguration>
   <Cup name="Sportvogl Cup 2016" year="2016" numberOfEvents="9" takeBest="6">
 	<!-- set num to 0 if not needed -->
-	<Event num="9" multiply="2" />
+	  <Event num="9" multiply="2" />
+    <Event num="11" multiply="3" />
   </Cup>
   <Classes>
     <Class name="S-Damen -13" id="50" diplayName="D13" />
@@ -13,7 +14,7 @@
     <Class name="S-Damen 55-" id="56" diplayName="D55" />
     <Class name="S-Herren -13" id="57" diplayName="H13" />
     <Class name="S-Herren -15" id="58" diplayName="H15" />
-	<Class name="S-Herren -18" id="59" diplayName="H18" />
+	  <Class name="S-Herren -18" id="59" diplayName="H18" />
     <Class name="S-Herren 19-" id="60" diplayName="H Elite" />
     <Class name="S-Herren 35-" id="61" diplayName="H35" />
     <Class name="S-Herren 45-" id="62" diplayName="H45" />

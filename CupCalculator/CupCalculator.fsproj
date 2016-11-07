@@ -25,7 +25,7 @@
     <DocumentationFile>bin\Debug\CupCalculator.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
-    <StartArguments>"C:/ol/data"</StartArguments>
+    <StartArguments>"C:/ol/events/2016" "SbgSchulCup_config.xml"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CupTypes.fs" />
+    <Compile Include="ProgramSettings.fs" />
     <Compile Include="Helper.fs" />
     <Compile Include="Parsing.fs" />
     <Compile Include="Result.fs" />

@@ -2,11 +2,10 @@
 
 open CupTypes
 open Helper
+open ProgramSettings
 
 let getClubName id =
-    let n = XmlConfig.GetSample().Organisations
-                |> Array.toList
-                |> List.find(fun x -> x.Id = id)
+    let n = !orgCfg |> List.find(fun x -> x.Id = id)
     n.Name
 
 let buildRankingHeader i =
@@ -34,8 +33,7 @@ let printSingleDetailedResult points time pos counts =
     p1 + points.ToString() + p2 + t + p3
 
 let printDetailedResultRow results =
-    let events = XmlConfig.GetSample().Cup.NumberOfEvents
-    let races = [1..events] |> List.map (fun i -> "SC" + i.ToString("D2") + "_" + XmlConfig.GetSample().Cup.Year.ToString())
+    let races = [1..!maxEvents] |> List.map (fun i -> "SC" + i.ToString("D2") + "_" + (!year).ToString())
     [ for r in races do
           let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
           if Seq.isEmpty p then yield "<td/>"
@@ -45,8 +43,7 @@ let printDetailedResultRow results =
 
 let printResult classHeader catResult =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""
-    let events = XmlConfig.GetSample().Cup.NumberOfEvents
-    let part2 = [1..events] |> List.map buildRankingHeader |> combineListToString
+    let part2 = [1..!maxEvents] |> List.map buildRankingHeader |> combineListToString
     let part3 = "</tr>"
 
     let totalGrouped = catResult
@@ -79,18 +76,14 @@ let printResult classHeader catResult =
     part1 + part2 + part3 + sRes + part4
 
 let buildResultHtml catResults =
-    let takeBest = XmlConfig.GetSample().Cup.TakeBest
-    let maxEvents = XmlConfig.GetSample().Cup.NumberOfEvents
     let htmlOpen = "<html>"
     let htmlClose = "</html>"
-    let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + XmlConfig.GetSample().Cup.Name + """</title></head>"""
-    let bodyTop = """<body><h1>Rangliste</h1><br/><br/><div>Gewertet werden die <strong>""" + takeBest.ToString() + """</strong> besten Ergebnisse von <strong>""" + maxEvents.ToString() + """</strong>.</div><br/><br/><br/><br/>"""
+    let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + (!cupName) + """</title></head>"""
+    let bodyTop = """<body><h1>Rangliste</h1><br/><br/><div>Gewertet werden die <strong>""" + (!takeBest).ToString() + """</strong> besten Ergebnisse von <strong>""" + (!maxEvents).ToString() + """</strong>.</div><br/><br/><br/><br/>"""
     let bodyBottom = """<br/><div>(c) """ + System.DateTime.Now.Year.ToString() + """ by solv.at | Daten: ANNE / oefol.at und der veranstaltende Verein</div><br/><div>webmaster@solv.at</div><div>Erstellt: """ + System.DateTime.Now.ToString("R") + """</div></body>"""
 
-    let cfgList = XmlConfig.GetSample().Classes |> Array.toList
-
     let catRes =
-        [ for cfg in cfgList do  
+        [ for cfg in !classCfg do  
             let classHeader = sprintf "%s (%s)" cfg.Name cfg.DiplayName 
             let _, catResult = catResults 
                                 |> Seq.find(fun (catId, res) -> catId = cfg.Id)
