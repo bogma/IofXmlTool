@@ -28,7 +28,7 @@ type ParsedResult = {
 type PersonalRaceResult = {
     OrganisationId : int;
     Name : string;
-    Points : int;
+    Points : decimal;
     Time : int;
     Position : int
 }

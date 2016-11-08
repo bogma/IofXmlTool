@@ -1,8 +1,8 @@
 <CupConfiguration>
-  <Cup name="Sportvogl Cup 2016" year="2016" numberOfEvents="9" takeBest="6">
+  <Cup name="Sportvogl Cup 2016" year="2016" numberOfEvents="9" takeBest="6" calcRule="calcPointsFromTime">
 	<!-- set num to 0 if not needed -->
-	  <Event num="9" multiply="2" />
-    <Event num="11" multiply="3" />
+	  <Event num="9" multiply="2.0" />
+    <Event num="11" multiply="3.0" />
   </Cup>
   <Classes>
     <Class name="S-Damen -13" id="50" diplayName="D13" />
@@ -26,5 +26,4 @@
     <Organisation name="HBLA Ursprung" id="52" />
     <Organisation name="HSV Wals" id="33" />
   </Organisations>
-  <CalculationRule name="SC" />
 </CupConfiguration>

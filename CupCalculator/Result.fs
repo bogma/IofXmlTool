@@ -33,7 +33,7 @@ let printSingleDetailedResult points time pos counts =
     p1 + points.ToString() + p2 + t + p3
 
 let printDetailedResultRow results =
-    let races = [1..!maxEvents] |> List.map (fun i -> "SC" + i.ToString("D2") + "_" + (!year).ToString())
+    let races = [1..!maxEvents] |> List.map (fun i -> "SbgSchulCup" + i.ToString("D2") + "_" + (!year).ToString())
     [ for r in races do
           let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
           if Seq.isEmpty p then yield "<td/>"
@@ -41,7 +41,7 @@ let printDetailedResultRow results =
             let _, _, prr, counts = p |> Seq.take 1 |> Seq.exactlyOne
             yield printSingleDetailedResult prr.Points prr.Time prr.Position counts ]
 
-let printResult classHeader catResult =
+let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<string * 'c * PersonalRaceResult * bool>>) =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""
     let part2 = [1..!maxEvents] |> List.map buildRankingHeader |> combineListToString
     let part3 = "</tr>"
@@ -84,10 +84,12 @@ let buildResultHtml catResults =
 
     let catRes =
         [ for cfg in !classCfg do  
-            let classHeader = sprintf "%s (%s)" cfg.Name cfg.DiplayName 
-            let _, catResult = catResults 
-                                |> Seq.find(fun (catId, res) -> catId = cfg.Id)
-            yield printResult classHeader catResult ]
+            let classHeader = sprintf "%s (%s)" cfg.Name cfg.DiplayName
+            let exists = catResults |> Seq.exists(fun (catId, _) -> catId = cfg.Id)
+            if exists then
+                let _, catResult = catResults 
+                                    |> Seq.find(fun (catId, res) -> catId = cfg.Id)
+                yield printResult classHeader catResult ]
 
     let catResString = catRes |> combineListToString
     htmlOpen + head + bodyTop + catResString + bodyBottom + htmlClose

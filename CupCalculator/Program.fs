@@ -1,4 +1,5 @@
-﻿open System.IO
+﻿open System
+open System.IO
 open System.Xml
 open System.Xml.Linq
 open CupTypes
@@ -8,30 +9,46 @@ open ProgramSettings
 open Result
 open FSharp.Data
 
+let calcPointsFromPosition winningTime time pos =
+    match pos with
+    | 1 -> 25m
+    | 2 -> 20m
+    | 3 -> 16m
+    | 4 -> 13m
+    | 5 -> 11m
+    | 6 -> 10m
+    | 7 -> 9m
+    | 8 -> 8m
+    | 9 -> 7m
+    | 10 -> 6m
+    | 11 -> 5m
+    | 12 -> 4m
+    | 13 -> 3m
+    | 14 -> 2m
+    | 15 -> 1m
+    | _ -> 0m
+
+let calcPointsFromTime winningTime time pos =
+    let p = 100m - (((time - winningTime) / winningTime) * 50m)
+    if p < 0m then 0m
+    else p
+
+type CalculationRule(calcFunction) = 
+    member this.CalcFunction with get() = calcFunction    
+    member this.Execute wt rt pos = calcFunction wt rt pos
+
+let getCalcStrategy calcRule =
+    match calcRule with
+        | "calcPointsFromTime" -> CalculationRule(calcPointsFromTime)
+        | "calcPointsFromPosition" -> CalculationRule(calcPointsFromPosition)
+        | _ -> CalculationRule(calcPointsFromTime)
+
+
 let flatten x =
     [for event, c in x do
         for category, prrSeq in c do
            for prr in prrSeq do
                yield event, category, prr]
-
-let calcPoints pos =
-    match pos with
-    | 1 -> 25
-    | 2 -> 20
-    | 3 -> 16
-    | 4 -> 13
-    | 5 -> 11
-    | 6 -> 10
-    | 7 -> 9
-    | 8 -> 8
-    | 9 -> 7
-    | 10 -> 6
-    | 11 -> 5
-    | 12 -> 4
-    | 13 -> 3
-    | 14 -> 2
-    | 15 -> 1
-    | _ -> 0
 
 let buildEventResult (inputFile : string) =
     
@@ -40,13 +57,15 @@ let buildEventResult (inputFile : string) =
         let p = fileName.IndexOf("_")
         let s = fileName.Substring(p-2, 2).AsInteger()
         if !eventProps |> List.exists (fun x -> x.Num = s) then !eventProps |> List.filter (fun x -> x.Num = s) |> List.map (fun x -> x.Multiply) |> List.head
-        else 1
+        else 1.0m
 
-    let calcSingleResult (item : ParsedResult) i =
+    let calcSingleResult winningTime (item : ParsedResult) i =
+        let strategy = getCalcStrategy !calcRule
+        let points = strategy.Execute winningTime (decimal item.Time) i * eventMultiplier
         { 
             OrganisationId = item.OrganisationId;
             Name = item.GivenName + " " + item.FamilyName;
-            Points = calcPoints i * eventMultiplier;
+            Points = Math.Round(points, 2);
             Time = item.Time;
             Position = i;
         }
@@ -62,9 +81,11 @@ let buildEventResult (inputFile : string) =
                                 let timeGroupedRes = clRes 
                                                         |> Seq.sortBy (fun x -> x.Time)
                                                         |> Seq.groupBy (fun x -> x.Time)
+                                let winningTime, _ = timeGroupedRes |> Seq.head
                                 let cupPositions = getPositionSeq 1 (getIntervalList timeGroupedRes)
                                 let res = (cupPositions, timeGroupedRes) 
-                                                ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> calcSingleResult item i1))
+                                                ||> Seq.map2 (fun i1 i2 -> snd i2 
+                                                                            |> Seq.map (fun item -> calcSingleResult (decimal winningTime) item i1))
                                 clId, flattenSeqOfSeq res)
     fileName, r
 
@@ -84,10 +105,9 @@ let main argv =
     orgCfgIds := Config.Organisations  |> Array.toList |> List.map (fun x -> x.Id)
     eventProps := Config.Cup.Events |> Array.toList
     year := Config.Cup.Year
+    calcRule := Config.Cup.CalcRule
 
-    let competitions =
-        getFiles inputPath "*SC*_2016.xml"
-        //getFiles inputPath "*SC*.csv"
+    let competitions = getFiles inputPath "*_*.xml" false
 
     let results =
         competitions

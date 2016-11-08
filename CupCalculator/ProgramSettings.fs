@@ -13,3 +13,4 @@
     let orgCfg : CupTypes.XmlConfig.Organisation list ref = ref List.Empty
     let orgCfgIds : int list ref = ref List.Empty
     let eventProps : CupTypes.XmlConfig.Event list ref = ref List.Empty
+    let calcRule = ref ""
