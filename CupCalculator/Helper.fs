@@ -22,7 +22,8 @@ let flattenSeqOfSeq outer =
              for s in inner do
                 yield s }
 
-let rec getFiles dir pattern =
+let rec getFiles dir pattern subdirs =
     seq { yield! Directory.EnumerateFiles(dir, pattern)
-          for d in Directory.EnumerateDirectories(dir) do
-              yield! getFiles d pattern }
+          if subdirs then
+              for d in Directory.EnumerateDirectories(dir) do
+                  yield! getFiles d pattern subdirs }
