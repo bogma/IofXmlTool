@@ -1,2 +1,5 @@
-﻿* strikethrough results that are not counted
+﻿//TODO: find better indicator for non counting results
+//TODO: how to maintain different calulation rules (evt. rules defined in sep config file)
+//TODO: better command line options
+//TODO: find and report simmilar names
 
