@@ -27,3 +27,31 @@ let rec getFiles dir pattern subdirs =
           if subdirs then
               for d in Directory.EnumerateDirectories(dir) do
                   yield! getFiles d pattern subdirs }
+
+// build all combinations of lenght n from list l
+let rec comb n l = 
+    match n, l with
+    | 0, _ -> [[]]
+    | _, [] -> []
+    | k, (x::xs) -> List.map ((@) [x]) (comb (k-1) xs) @ comb k xs
+
+// calc Levensthein distance
+let levDist (strOne : string) (strTwo : string) =
+    let strOne = strOne.ToCharArray ()
+    let strTwo = strTwo.ToCharArray ()
+ 
+    let (distArray : int[,]) = Array2D.zeroCreate (strOne.Length + 1) (strTwo.Length + 1)
+ 
+    for i = 0 to strOne.Length do distArray.[i, 0] <- i
+    for j = 0 to strTwo.Length do distArray.[0, j] <- j
+ 
+    for j = 1 to strTwo.Length do
+        for i = 1 to strOne.Length do
+            if strOne.[i - 1] = strTwo.[j - 1] then distArray.[i, j] <- distArray.[i - 1, j - 1]
+            else
+                distArray.[i, j] <- List.min (
+                    [distArray.[i-1, j] + 1; 
+                    distArray.[i, j-1] + 1; 
+                    distArray.[i-1, j-1] + 1]
+                )
+    distArray.[strOne.Length, strTwo.Length]
