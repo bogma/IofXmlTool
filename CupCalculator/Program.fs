@@ -89,6 +89,32 @@ let buildEventResult (inputFile : string) =
                                 clId, flattenSeqOfSeq res)
     fileName, r
 
+let rec comb n l = 
+    match n, l with
+    | 0, _ -> [[]]
+    | _, [] -> []
+    | k, (x::xs) -> List.map ((@) [x]) (comb (k-1) xs) @ comb k xs
+
+let levDist (strOne : string) (strTwo : string) =
+    let strOne = strOne.ToCharArray ()
+    let strTwo = strTwo.ToCharArray ()
+ 
+    let (distArray : int[,]) = Array2D.zeroCreate (strOne.Length + 1) (strTwo.Length + 1)
+ 
+    for i = 0 to strOne.Length do distArray.[i, 0] <- i
+    for j = 0 to strTwo.Length do distArray.[0, j] <- j
+ 
+    for j = 1 to strTwo.Length do
+        for i = 1 to strOne.Length do
+            if strOne.[i - 1] = strTwo.[j - 1] then distArray.[i, j] <- distArray.[i - 1, j - 1]
+            else
+                distArray.[i, j] <- List.min (
+                    [distArray.[i-1, j] + 1; 
+                    distArray.[i, j-1] + 1; 
+                    distArray.[i-1, j-1] + 1]
+                )
+    distArray.[strOne.Length, strTwo.Length]
+
 [<EntryPoint>]
 let main argv =
 
@@ -143,12 +169,28 @@ let main argv =
         results
         |> Seq.groupBy (fun (_, catId, _, _, _) -> catId)
 
+    let cs = catResults 
+                |> Seq.map (fun pair -> snd pair)
+                |> flattenSeqOfSeq
+                |> Seq.map( fun (name, _,_,_,_) -> name)
+                |> Seq.toList
+                |> comb 2
+                |> List.map (fun x -> x.[0], x.[1], levDist x.[0] x.[1])
+                |> List.filter (fun (a, b, x) -> x <= 3)
+    
+    
     let outputFileName = "cup_" + (!year).ToString() + ".html"
     let outputFile = Path.Combine(inputPath, outputFileName) 
     File.WriteAllText(outputFile,  buildResultHtml catResults)
     File.Copy("./resources/default.css", Path.Combine(inputPath, "default.css"), true)
 
-    printf "output written to %s" outputFile
+    printf "%A" cs
+    printf "length: %d" cs.Length
+
+    //let outputFile = "../../../../ol/cup_" + XmlConfig.GetSample().Cup.Year.ToString() + ".html"
+    //File.WriteAllText(outputFile,  buildResultHtml catResults)
+
+    //printf "output written to %s" outputFile
 
     System.Console.ReadLine() |> ignore
 
