@@ -1,6 +1,7 @@
 ﻿module Result
 
 open CupTypes
+open Calc
 open Helper
 open ProgramSettings
 
@@ -69,7 +70,9 @@ let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<s
                             let r5 = """</div></td>"""
                             let details = printDetailedResultRow singleResults |> combineListToString
                             let r6 = "</tr>"
-                            r1 + rank.ToString() + r2 + name + r3 + c + r4 + total.ToString() + r5 + details + r6)
+                            let strategy = getCalcStrategy !calcRule
+                            let totalFormated = strategy.FormatPoints total
+                            r1 + rank.ToString() + r2 + name + r3 + c + r4 + totalFormated + r5 + details + r6)
                 |> Seq.fold (fun str x -> str + x) ""
 
     let part4 = """</tbody></table><br/><br/><br/></div>"""

@@ -25,7 +25,7 @@
     <DocumentationFile>bin\Debug\CupCalculator.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
-    <StartArguments>"C:/ol/events/2016" "SbgSchulCup_config.xml"</StartArguments>
+    <StartArguments>"C:/ol/events/2016/SbgCup"</StartArguments>
     <Commandlineparameters>"../../../../ol/data" "config.xml"</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CupTypes.fs" />
+    <Compile Include="Calc.fs" />
     <Compile Include="ProgramSettings.fs" />
     <Compile Include="Helper.fs" />
     <Compile Include="Parsing.fs" />
