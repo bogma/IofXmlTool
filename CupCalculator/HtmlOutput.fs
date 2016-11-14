@@ -1,4 +1,4 @@
-﻿module Result
+﻿module HtmlOutput
 
 open CupTypes
 open Calc

@@ -7,7 +7,7 @@ open Calc
 open Helper
 open Parsing
 open ProgramSettings
-open Result
+open HtmlOutput
 open FSharp.Data
 
 

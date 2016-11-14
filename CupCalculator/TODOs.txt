@@ -1,8 +1,7 @@
 ﻿//TODO: find better indicator for non counting results
-//TODO: format point with 2 or 0 digits according to calc rule
 //TODO: better command line options
 		-p path
 		-c config file (default: config.xml)
 		-cp config path (default: path)
 //TODO: find and report simmilar names
-
+//TODO: exeption handling
