@@ -1,0 +1,6 @@
+NUGET
+  remote: http://api.nuget.org/v3/index.json
+    FSharp.Data (2.3.2)
+      Zlib.Portable (>= 1.11) - framework: >= netstandard11, portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
+    PDFsharp-MigraDoc (1.50.4000-beta3b)
+    Zlib.Portable (1.11) - framework: >= netstandard11, portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
