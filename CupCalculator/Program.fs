@@ -8,8 +8,8 @@ open Helper
 open Parsing
 open ProgramSettings
 open HtmlOutput
+open PdfOutput
 open FSharp.Data
-
 
 let flatten x =
     [for event, c in x do
@@ -125,11 +125,13 @@ let main argv =
         if cs.Length > 0 then
             printfn "%A" cs
 
-    let outputFileName = "cup_" + (!year).ToString() + ".html"
-    let outputFile = Path.Combine(inputPath, outputFileName) 
-    File.WriteAllText(outputFile,  buildResultHtml catResults)
-    File.Copy("./resources/default.css", Path.Combine(inputPath, "default.css"), true)
-    printf "output written to %s" outputFile
+//    let outputFileName = "cup_" + (!year).ToString() + ".html"
+//    let outputFile = Path.Combine(inputPath, outputFileName) 
+//    buildResultHtml catResults outputFile |> ignore
+
+    let outputFileName = "cup_" + (!year).ToString() + ".pdf"
+    let outputFile = Path.Combine(inputPath, outputFileName)   
+    buildResultPdf catResults outputFile|> ignore
 
     System.Console.ReadLine() |> ignore
 

@@ -4,24 +4,13 @@ open CupTypes
 open Calc
 open Helper
 open ProgramSettings
-
-let getClubName id =
-    let n = !orgCfg |> List.find(fun x -> x.Id = id)
-    n.Name
+open System.IO
 
 let buildRankingHeader i =
     let p1 = """<td class="ranking_header" valign="bottom" align="center"><div>"""
     let p2 = """</div></td>"""
     let s = sprintf "%i. SC" i
     p1 + s + p2
-
-let formatSeconds2Time time =
-    let t1 = float time
-    let ts = System.TimeSpan.FromSeconds(t1)
-    let h = 
-        if ts.Hours > 0 then ts.Hours.ToString() + ":"
-        else ""
-    h + ts.ToString(@"mm\:ss")
 
 let printSingleDetailedResult points time pos counts =
     let p1 = 
@@ -58,8 +47,8 @@ let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<s
 
     let sRes = res
                |> Seq.mapi (fun i (rank, item) ->
-                            let name, cat, club, total, singleResults = item
-                            let c = getClubName club
+                            let name, cat, clubId, total, singleResults = item
+                            let c = getClubNameById !orgCfg clubId
                             let rowClass = 
                                 if (i % 2 = 0) then "cal_out_white"
                                 else "cal_out_grey"
@@ -78,7 +67,7 @@ let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<s
     let part4 = """</tbody></table><br/><br/><br/></div>"""
     part1 + part2 + part3 + sRes + part4
 
-let buildResultHtml catResults =
+let buildResultHtml catResults (outputFile:string)=
     let htmlOpen = "<html>"
     let htmlClose = "</html>"
     let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + (!cupName) + """</title></head>"""
@@ -95,4 +84,8 @@ let buildResultHtml catResults =
                 yield printResult classHeader catResult ]
 
     let catResString = catRes |> combineListToString
-    htmlOpen + head + bodyTop + catResString + bodyBottom + htmlClose
+    
+    File.WriteAllText(outputFile, htmlOpen + head + bodyTop + catResString + bodyBottom + htmlClose)
+    let path = Path.GetFullPath(outputFile)
+    File.Copy("./resources/default.css", Path.Combine(path, "default.css"), true)
+    printf "HTML output written to %s" outputFile

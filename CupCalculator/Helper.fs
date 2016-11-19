@@ -55,3 +55,15 @@ let levDist (strOne : string) (strTwo : string) =
                     distArray.[i-1, j-1] + 1]
                 )
     distArray.[strOne.Length, strTwo.Length]
+
+let getClubNameById (organisations:CupTypes.XmlConfig.Organisation list) (id:int) =
+    let n = organisations |> List.find(fun x -> x.Id = id)
+    n.Name
+
+let formatSeconds2Time time =
+    let t1 = float time
+    let ts = System.TimeSpan.FromSeconds(t1)
+    let h = 
+        if ts.Hours > 0 then ts.Hours.ToString() + ":"
+        else ""
+    h + ts.ToString(@"mm\:ss")
