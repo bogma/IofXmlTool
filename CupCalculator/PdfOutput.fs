@@ -76,11 +76,13 @@ let printSingleDetailedResult points time pos counts =
 //    let p1 = 
 //        if counts then normal
 //        else strikethrough // + points i.e 100,00
+    let strategy = getCalcStrategy !calcRule
+    let pointsFormated = strategy.FormatPoints points
     let tsString = formatSeconds2Time time
-    sprintf "%s\n%s (%i)" (points.ToString()) tsString pos
+    sprintf "%s\n%s (%i)" pointsFormated tsString pos
 
 let printDetailedResultCells results (row:Row) =              
-    let races = [1..!maxEvents] |> List.map (fun i -> "SC" + i.ToString("D2") + "_" + (!year).ToString())
+    let races = [1..!maxEvents] |> List.map (fun i -> (!resultFilePrefix) + i.ToString("D2") + "_" + (!year).ToString())
     races |> List.iteri (fun i r ->
                              let cell = row.Cells.[i + 3]
                              let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
@@ -178,4 +180,4 @@ let buildResultPdf catResults (outputFile:string) =
     renderer.Document <- doc
     renderer.RenderDocument()
     renderer.PdfDocument.Save(outputFile)
-    printf "PDF output written to %s" outputFile
+    printfn "PDF output written to %s" outputFile

@@ -18,12 +18,14 @@ let printSingleDetailedResult points time pos counts =
         else """<td align="center"><div style="overflow:hidden;text-decoration:line-through;">""" // + points i.e 100,00
     let p2 = """</div><div class="time" style="overflow:hidden">""" // + time (pos) i.e 45:29 (1)
     let p3 = """</div></td>"""
+    let strategy = getCalcStrategy !calcRule
+    let pointsFormated = strategy.FormatPoints points
     let tsString = formatSeconds2Time time
     let t = sprintf "%s (%i)" tsString pos
-    p1 + points.ToString() + p2 + t + p3
+    p1 + pointsFormated + p2 + t + p3
 
 let printDetailedResultRow results =
-    let races = [1..!maxEvents] |> List.map (fun i -> "SbgSchulCup" + i.ToString("D2") + "_" + (!year).ToString())
+    let races = [1..!maxEvents] |> List.map (fun i -> (!resultFilePrefix) + i.ToString("D2") + "_" + (!year).ToString())
     [ for r in races do
           let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
           if Seq.isEmpty p then yield "<td/>"
@@ -86,6 +88,6 @@ let buildResultHtml catResults (outputFile:string)=
     let catResString = catRes |> combineListToString
     
     File.WriteAllText(outputFile, htmlOpen + head + bodyTop + catResString + bodyBottom + htmlClose)
-    let path = Path.GetFullPath(outputFile)
+    let path = Path.GetDirectoryName(outputFile)
     File.Copy("./resources/default.css", Path.Combine(path, "default.css"), true)
-    printf "HTML output written to %s" outputFile
+    printfn "HTML output written to %s" outputFile

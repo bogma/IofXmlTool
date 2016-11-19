@@ -1,5 +1,5 @@
 <CupConfiguration>
-  <Cup name="Sportvogl Cup 2016" year="2016" numberOfEvents="9" takeBest="6" calcRule="calcPointsFromTime">
+  <Cup name="Sportvogl Cup 2016" year="2016" numberOfEvents="9" takeBest="6" calcRule="calcPointsFromTime" resultFilePrefix="SC">
 	<!-- set num to 0 if not needed -->
 	  <Event num="9" multiply="2.0" />
     <Event num="11" multiply="3.0" />

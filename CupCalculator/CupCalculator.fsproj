@@ -25,7 +25,7 @@
     <DocumentationFile>bin\Debug\CupCalculator.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
-    <StartArguments>"C:/ol/events/2016/SbgCup"</StartArguments>
+    <StartArguments>"C:/ol/events/2016/SchulCup"</StartArguments>
     <Commandlineparameters>"../../../../ol/data" "config.xml"</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

@@ -75,6 +75,7 @@ let main argv =
     eventProps := Config.Cup.Events |> Array.toList
     year := Config.Cup.Year
     calcRule := Config.Cup.CalcRule
+    resultFilePrefix := Config.Cup.ResultFilePrefix
 
     let competitions = getFiles inputPath "*_*.xml" false
 
@@ -125,9 +126,9 @@ let main argv =
         if cs.Length > 0 then
             printfn "%A" cs
 
-//    let outputFileName = "cup_" + (!year).ToString() + ".html"
-//    let outputFile = Path.Combine(inputPath, outputFileName) 
-//    buildResultHtml catResults outputFile |> ignore
+    let outputFileName = "cup_" + (!year).ToString() + ".html"
+    let outputFile = Path.Combine(inputPath, outputFileName) 
+    buildResultHtml catResults outputFile |> ignore
 
     let outputFileName = "cup_" + (!year).ToString() + ".pdf"
     let outputFile = Path.Combine(inputPath, outputFileName)   
