@@ -1,6 +1,7 @@
 <CupConfiguration>
   <Cup name="Sportvogl Cup 2016" year="2016" numberOfEvents="9" takeBest="6" calcRule="calcPointsFromTime" resultFilePrefix="SC">
 	<!-- set num to 0 if not needed -->
+    <Event num="1" date="" name="" fileName="" />
 	  <Event num="9" multiply="2.0" />
     <Event num="11" multiply="3.0" />
   </Cup>
@@ -26,4 +27,8 @@
     <Organisation name="HBLA Ursprung" id="52" />
     <Organisation name="HSV Wals" id="33" />
   </Organisations>
+  <Output>
+    <Html rowStyle="singleLine"></Html>
+    <Pdf rowStyle="doubleLine" orientation="Landscape" image=""></Pdf>
+  </Output>
 </CupConfiguration>
