@@ -15,3 +15,5 @@
     let eventProps : CupTypes.XmlConfig.Event list ref = ref List.Empty
     let calcRule = ref ""
     let resultFilePrefix = ref ""
+    let orientation = ref "Landscape"
+

@@ -41,7 +41,10 @@ let setStyles (document:Document) =
 
 let head (document:Document) =
     let section = document.AddSection()
-    section.PageSetup.Orientation <- Orientation.Landscape
+    match (!orientation) with
+    | "Portrait" -> section.PageSetup.Orientation <- Orientation.Portrait
+    | _ -> section.PageSetup.Orientation <- Orientation.Landscape
+
     let paragraph = section.AddParagraph()
     paragraph.Format.SpaceAfter <- new Unit(3.0, UnitType.Centimeter)
 
@@ -73,13 +76,17 @@ let defineFooter (document:Document) =
     0
 
 let printSingleDetailedResult points time pos counts =
-//    let p1 = 
-//        if counts then normal
-//        else strikethrough // + points i.e 100,00
+    let formattedText = new FormattedText()
     let strategy = getCalcStrategy !calcRule
-    let pointsFormated = strategy.FormatPoints points
+    let pointsFormatted = strategy.FormatPoints points
     let tsString = formatSeconds2Time time
-    sprintf "%s\n%s (%i)" pointsFormated tsString pos
+    let format = 
+         if counts then TextFormat.Bold
+         else TextFormat.Italic
+    formattedText.AddFormattedText(pointsFormatted, format) |> ignore
+    formattedText.AddFormattedText("\n") |> ignore
+    formattedText.AddFormattedText(sprintf "%s (%i)" tsString pos) |> ignore
+    formattedText    
 
 let printDetailedResultCells results (row:Row) =              
     let races = [1..!maxEvents] |> List.map (fun i -> (!resultFilePrefix) + i.ToString("D2") + "_" + (!year).ToString())
@@ -91,7 +98,8 @@ let printDetailedResultCells results (row:Row) =
                              else 
                                 let _, _, prr, counts = p |> Seq.take 1 |> Seq.exactlyOne
                                 let txt = printSingleDetailedResult prr.Points prr.Time prr.Position counts
-                                cell.AddParagraph(txt) |> ignore)
+                                let paragraph = cell.AddParagraph()
+                                paragraph.Add(txt) |> ignore)
 
 let addTable (document:Document) classHeader (catResult : seq<string * 'a * int * decimal * seq<string * 'c * PersonalRaceResult * bool>>) =
     document.LastSection.AddParagraph(classHeader, StyleNames.Heading2) |> ignore
@@ -148,10 +156,6 @@ let addTable (document:Document) classHeader (catResult : seq<string * 'a * int 
     document.LastSection.Add(table)
 
 let buildResultPdf catResults (outputFile:string) =
-    let TableBorder = new Color(81uy, 125uy, 192uy)
-    let TableBlue = new Color(235uy, 240uy, 249uy)
-    let TableGray = new Color(242uy, 242uy, 242uy)
-
     let doc = new Document()
     doc.Info.Title <- (!cupName)
     

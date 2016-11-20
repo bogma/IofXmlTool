@@ -23,7 +23,11 @@ let buildEventResult (inputFile : string) =
     let eventMultiplier = 
         let p = fileName.IndexOf("_")
         let s = fileName.Substring(p-2, 2).AsInteger()
-        if !eventProps |> List.exists (fun x -> x.Num = s) then !eventProps |> List.filter (fun x -> x.Num = s) |> List.map (fun x -> x.Multiply) |> List.head
+        let exists = !eventProps |> List.exists (fun x -> x.Num = s)
+        if exists then 
+            match !eventProps |> List.filter (fun x -> x.Num = s) |> List.map (fun x -> x.Multiply) |> List.head with
+            | Some(x) -> x
+            | _ -> 1.0m
         else 1.0m
 
     let calcSingleResult winningTime (item : ParsedResult) i =
@@ -76,6 +80,7 @@ let main argv =
     year := Config.Cup.Year
     calcRule := Config.Cup.CalcRule
     resultFilePrefix := Config.Cup.ResultFilePrefix
+    orientation := Config.Output.Pdf.Orientation
 
     let competitions = getFiles inputPath "*_*.xml" false
 
