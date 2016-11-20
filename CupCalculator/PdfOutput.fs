@@ -123,16 +123,8 @@ let addTable (document:Document) classHeader (catResult : seq<string * 'a * int 
                                        let cell = row.Cells.[i + 3]
                                        cell.AddParagraph(sprintf "%i. SC" x) |> ignore)
 
-    let totalGrouped = catResult
-                        |> Seq.sortBy (fun (_, _, _, total, _) -> -total)
-                        |> Seq.groupBy (fun (_, _, _, total, _) -> total)
-    let totalPositions = getPositionSeq 1 (getIntervalList totalGrouped)
-
-    let res = (totalPositions, totalGrouped) 
-                   ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> i1, item))
-                   |> flattenSeqOfSeq
-
-    res |> Seq.iteri (fun i (rank, item) ->
+    recalcPositions catResult 
+       |> Seq.iteri (fun i (rank, item) ->
                             let name, cat, club, total, singleResults = item
                             let c = getClubNameById (!orgCfg) club
                             let row = table.AddRow()

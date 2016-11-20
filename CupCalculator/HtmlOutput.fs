@@ -38,16 +38,7 @@ let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<s
     let part2 = [1..!maxEvents] |> List.map buildRankingHeader |> combineListToString
     let part3 = "</tr>"
 
-    let totalGrouped = catResult
-                        |> Seq.sortBy (fun (_, _, _, total, _) -> -total)
-                        |> Seq.groupBy (fun (_, _, _, total, _) -> total)
-    let totalPositions = getPositionSeq 1 (getIntervalList totalGrouped)
-
-    let res = (totalPositions, totalGrouped) 
-                   ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> i1, item))
-                   |> flattenSeqOfSeq
-
-    let sRes = res
+    let sRes = recalcPositions catResult
                |> Seq.mapi (fun i (rank, item) ->
                             let name, cat, clubId, total, singleResults = item
                             let c = getClubNameById !orgCfg clubId

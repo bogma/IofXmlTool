@@ -1,5 +1,6 @@
 ﻿module Helper
 
+open CupTypes
 open System.IO
 
 let runningTotal = List.scan (+) 0 >> List.tail
@@ -67,3 +68,13 @@ let formatSeconds2Time time =
         if ts.Hours > 0 then ts.Hours.ToString() + ":"
         else ""
     h + ts.ToString(@"mm\:ss")
+
+let recalcPositions (catResult : seq<string * 'a * int * decimal * seq<string * 'c * PersonalRaceResult * bool>>) = 
+    let totalGrouped = catResult
+                        |> Seq.sortBy (fun (_, _, _, total, _) -> -total)
+                        |> Seq.groupBy (fun (_, _, _, total, _) -> total)
+    let totalPositions = getPositionSeq 1 (getIntervalList totalGrouped)
+
+    (totalPositions, totalGrouped) 
+                   ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> i1, item))
+                   |> flattenSeqOfSeq
