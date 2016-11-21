@@ -39,7 +39,7 @@ let printResult classHeader (classResult : seq<CupResult>) =
 
     let sRes = recalcPositions classResult
                |> Seq.mapi (fun i (rank, item) ->
-                            let c = getClubNameById item.ClassId
+                            let c = getClubNameById item.OrganisationId
                             let rowClass = 
                                 if (i % 2 = 0) then "cal_out_white"
                                 else "cal_out_grey"

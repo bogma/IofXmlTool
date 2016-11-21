@@ -132,7 +132,7 @@ let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
 
     recalcPositions classResult 
        |> Seq.iteri (fun i (rank, item) ->
-                            let c = getClubNameById item.ClassId
+                            let c = getClubNameById item.OrganisationId
                             let row = table.AddRow()
 
                             if (i % 2 = 0) then row.Shading.Color <- Colors.White

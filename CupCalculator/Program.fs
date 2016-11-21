@@ -105,13 +105,13 @@ let main argv =
                             |> Seq.sumBy (fun (_, _, prr) -> prr.Points)
                         { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalPoints = sum; Results = x })
 
-    let catResults =
+    let classResults =
         results
         |> Seq.groupBy (fun cupResult -> cupResult.ClassId)
 
-    for cr in catResults do
+    for cr in classResults do
         let catId = fst cr
-        printfn "checking names for category %d" catId
+        printfn "checking names for class %s" (getClassNameById catId)
         let cs = snd cr
                     |> Seq.map( fun cupResult -> cupResult.PersonName)
                     |> Seq.toList
@@ -123,10 +123,10 @@ let main argv =
             printfn "%A" cs
 
     let outputFile = Path.Combine(inputPath, Config.Output.Html.FileName) 
-    buildResultHtml catResults outputFile |> ignore
+    buildResultHtml classResults outputFile |> ignore
 
     let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
-    buildResultPdf catResults outputFile|> ignore
+    buildResultPdf classResults outputFile|> ignore
 
     System.Console.ReadLine() |> ignore
 

@@ -61,6 +61,10 @@ let getClubNameById (id:int) =
     let n = Config.Organisations |> Array.toList |> List.find(fun x -> x.Id = id)
     n.Name
 
+let getClassNameById (id:int) =
+    let n = Config.Classes |> Array.toList |> List.find(fun x -> x.Id = id)
+    n.Name
+
 let formatSeconds2Time time =
     let t1 = float time
     let ts = System.TimeSpan.FromSeconds(t1)
