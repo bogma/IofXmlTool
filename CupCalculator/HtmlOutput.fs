@@ -23,24 +23,23 @@ let printSingleDetailedResult points time pos counts =
     let t = sprintf "%s (%i)" tsString pos
     p1 + pointsFormated + p2 + t + p3
 
-let printDetailedResultRow results =
+let printDetailedResultRow (results : seq<EventResult>) =
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> (Config.Cup.ResultFilePrefix) + i.ToString("D2") + "_" + (Config.Cup.Year).ToString())
     [ for r in races do
-          let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
+          let p = results |> Seq.filter (fun eventResult -> eventResult.EventFile = r)
           if Seq.isEmpty p then yield "<td/>"
           else 
-            let _, _, prr, counts = p |> Seq.take 1 |> Seq.exactlyOne
-            yield printSingleDetailedResult prr.Points prr.Time prr.Position counts ]
+            let eventResult = p |> Seq.take 1 |> Seq.exactlyOne
+            yield printSingleDetailedResult eventResult.PRR.Points eventResult.PRR.Time eventResult.PRR.Position eventResult.ResultCounts ]
 
-let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<string * 'c * PersonalRaceResult * bool>>) =
+let printResult classHeader (classResult : seq<CupResult>) =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""
     let part2 = [1..Config.Cup.NumberOfEvents] |> List.map buildRankingHeader |> combineListToString
     let part3 = "</tr>"
 
-    let sRes = recalcPositions catResult
+    let sRes = recalcPositions classResult
                |> Seq.mapi (fun i (rank, item) ->
-                            let name, cat, clubId, total, singleResults = item
-                            let c = getClubNameById clubId
+                            let c = getClubNameById item.ClassId
                             let rowClass = 
                                 if (i % 2 = 0) then "cal_out_white"
                                 else "cal_out_grey"
@@ -49,17 +48,17 @@ let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<s
                             let r3 = """</b></div><div style="overflow:hidden;">"""
                             let r4 = """</div></td><td align="center" style="border-right:1px solid #888;"><div style="overflow:hidden;font-weight:bold;">"""
                             let r5 = """</div></td>"""
-                            let details = printDetailedResultRow singleResults |> combineListToString
+                            let details = printDetailedResultRow item.Results |> combineListToString
                             let r6 = "</tr>"
                             let strategy = getCalcStrategy Config.Cup.CalcRule
-                            let totalFormated = strategy.FormatPoints total
-                            r1 + rank.ToString() + r2 + name + r3 + c + r4 + totalFormated + r5 + details + r6)
+                            let totalFormated = strategy.FormatPoints item.TotalPoints
+                            r1 + rank.ToString() + r2 + item.PersonName + r3 + c + r4 + totalFormated + r5 + details + r6)
                 |> Seq.fold (fun str x -> str + x) ""
 
     let part4 = """</tbody></table><br/><br/><br/></div>"""
     part1 + part2 + part3 + sRes + part4
 
-let buildResultHtml catResults (outputFile:string)=
+let buildResultHtml classResults (outputFile:string)=
     let htmlOpen = "<html>"
     let htmlClose = "</html>"
     let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + Config.Cup.Name + """</title></head>"""
@@ -70,9 +69,9 @@ let buildResultHtml catResults (outputFile:string)=
     let catRes =
         [ for cfg in classCfg do  
             let classHeader = sprintf "%s (%s)" cfg.Name cfg.DiplayName
-            let exists = catResults |> Seq.exists(fun (catId, _) -> catId = cfg.Id)
+            let exists = classResults |> Seq.exists(fun (catId, _) -> catId = cfg.Id)
             if exists then
-                let _, catResult = catResults 
+                let _, catResult = classResults 
                                     |> Seq.find(fun (catId, res) -> catId = cfg.Id)
                 yield printResult classHeader catResult ]
 

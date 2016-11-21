@@ -99,21 +99,21 @@ let main argv =
                                             let counts =
                                                 if i < Config.Cup.TakeBest then true
                                                 else false
-                                            (a, b, c, counts))
+                                            { EventFile = a; ClassId = b; PRR = c; ResultCounts = counts; })
                         let sum = 
                             countingResults
                             |> Seq.sumBy (fun (_, _, prr) -> prr.Points)
-                        prr.Name, catId, prr.OrganisationId, sum, x)
+                        { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalPoints = sum; Results = x })
 
     let catResults =
         results
-        |> Seq.groupBy (fun (_, catId, _, _, _) -> catId)
+        |> Seq.groupBy (fun cupResult -> cupResult.ClassId)
 
     for cr in catResults do
         let catId = fst cr
         printfn "checking names for category %d" catId
         let cs = snd cr
-                    |> Seq.map( fun (name, _,_,_,_) -> name)
+                    |> Seq.map( fun cupResult -> cupResult.PersonName)
                     |> Seq.toList
                     |> comb 2
                     |> List.map (fun x -> x.[0], x.[1], levDist x.[0] x.[1])

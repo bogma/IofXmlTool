@@ -69,10 +69,10 @@ let formatSeconds2Time time =
         else ""
     h + ts.ToString(@"mm\:ss")
 
-let recalcPositions (catResult : seq<string * 'a * int * decimal * seq<string * 'c * PersonalRaceResult * bool>>) = 
-    let totalGrouped = catResult
-                        |> Seq.sortBy (fun (_, _, _, total, _) -> -total)
-                        |> Seq.groupBy (fun (_, _, _, total, _) -> total)
+let recalcPositions (classResult : seq<CupResult>) = 
+    let totalGrouped = classResult
+                        |> Seq.sortBy (fun cupResult -> -cupResult.TotalPoints)
+                        |> Seq.groupBy (fun cupResult -> cupResult.TotalPoints)
     let totalPositions = getPositionSeq 1 (getIntervalList totalGrouped)
 
     (totalPositions, totalGrouped) 

@@ -10,11 +10,6 @@ type XmlResult = XmlProvider<"resources/ResultListSampleData.xml">
 //type CsvResult = CsvProvider<"resources/ResultListSampleData.csv">
 //type HtmlResult = HtmlProvider<"resources/ResultListSampleData.html">
 
-//type PersonResult = { GivenName : string; FamilyName : string; Organisation : string; Status : string; Time : int; Position : int; Points : int }
-//type ClassResult = { ClassName : string; Results : PersonResult list }
-//type EventResult = { Name : string; Date : System.DateTime; Results : ClassResult list }
-//type Cup = { Title : string; Year : int; Results : EventResult list }
-
 let version = "1.0.0.0"
 let debugMode = ref false
 
@@ -40,4 +35,19 @@ type PersonalRaceResult = {
     Points : decimal;
     Time : int;
     Position : int
+}
+
+type EventResult = {
+    EventFile : string;
+    ClassId : int;
+    PRR : PersonalRaceResult;
+    ResultCounts : bool
+}
+
+type CupResult = {
+    PersonName : string;
+    ClassId : int;
+    OrganisationId : int;
+    TotalPoints : decimal;
+    Results : seq<EventResult>
 }

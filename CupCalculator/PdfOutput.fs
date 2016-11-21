@@ -87,20 +87,20 @@ let printSingleDetailedResult points time pos counts =
     formattedText.AddFormattedText(sprintf "%s (%i)" tsString pos) |> ignore
     formattedText    
 
-let printDetailedResultCells results (row:Row) =              
+let printDetailedResultCells (results:seq<EventResult>) (row:Row) =              
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> Config.Cup.ResultFilePrefix + i.ToString("D2") + "_" + Config.Cup.Year.ToString())
     races |> List.iteri (fun i r ->
                              let cell = row.Cells.[i + 3]
-                             let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
+                             let p = results |> Seq.filter (fun eventResult -> eventResult.EventFile = r)
                              if Seq.isEmpty p then 
                                  cell.AddParagraph("") |> ignore
                              else 
-                                let _, _, prr, counts = p |> Seq.take 1 |> Seq.exactlyOne
-                                let txt = printSingleDetailedResult prr.Points prr.Time prr.Position counts
+                                let eventResult = p |> Seq.take 1 |> Seq.exactlyOne
+                                let txt = printSingleDetailedResult eventResult.PRR.Points eventResult.PRR.Time eventResult.PRR.Position eventResult.ResultCounts
                                 let paragraph = cell.AddParagraph()
                                 paragraph.Add(txt) |> ignore)
 
-let addTable (document:Document) classHeader (catResult : seq<string * 'a * int * decimal * seq<string * 'c * PersonalRaceResult * bool>>) =
+let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
     document.LastSection.AddParagraph(classHeader, StyleNames.Heading2) |> ignore
 
     let table = new Table()
@@ -130,25 +130,24 @@ let addTable (document:Document) classHeader (catResult : seq<string * 'a * int 
                                        let cell = row.Cells.[i + 3]
                                        cell.AddParagraph(sprintf "%i. SC" x) |> ignore)
 
-    recalcPositions catResult 
+    recalcPositions classResult 
        |> Seq.iteri (fun i (rank, item) ->
-                            let name, cat, clubId, total, singleResults = item
-                            let c = getClubNameById clubId
+                            let c = getClubNameById item.ClassId
                             let row = table.AddRow()
 
                             if (i % 2 = 0) then row.Shading.Color <- Colors.White
                             else row.Shading.Color <- Colors.LightGray
 
                             let strategy = getCalcStrategy Config.Cup.CalcRule
-                            let totalFormated = strategy.FormatPoints total
+                            let totalFormated = strategy.FormatPoints item.TotalPoints
 
                             let cell = row.Cells.[0]
                             cell.AddParagraph(rank.ToString()) |> ignore
                             let cell = row.Cells.[1]
-                            cell.AddParagraph(sprintf "%s\n%s" name c) |> ignore
+                            cell.AddParagraph(sprintf "%s\n%s" item.PersonName c) |> ignore
                             let cell = row.Cells.[2]
                             cell.AddParagraph(totalFormated) |> ignore
-                            printDetailedResultCells singleResults row)
+                            printDetailedResultCells item.Results row)
         |> ignore
 
     //table.SetEdge(0, 0, 3, 3, Edge.Box, BorderStyle.Single, new Unit(1.5), Colors.Black)
