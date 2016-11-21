@@ -28,7 +28,7 @@
     <Organisation name="HSV Wals" id="33" />
   </Organisations>
   <Output>
-    <Html rowStyle="singleLine"></Html>
-    <Pdf rowStyle="doubleLine" orientation="Landscape" image=""></Pdf>
+    <Html fileName="cup-2016.html" rowStyle="singleLine"></Html>
+    <Pdf fileName="cup-2016.pdf" rowStyle="doubleLine" orientation="Landscape" image=""></Pdf>
   </Output>
 </CupConfiguration>

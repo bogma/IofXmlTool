@@ -3,7 +3,6 @@
 open CupTypes
 open Calc
 open Helper
-open ProgramSettings
 open System.IO
 
 let buildRankingHeader i =
@@ -18,14 +17,14 @@ let printSingleDetailedResult points time pos counts =
         else """<td align="center"><div style="overflow:hidden;text-decoration:line-through;">""" // + points i.e 100,00
     let p2 = """</div><div class="time" style="overflow:hidden">""" // + time (pos) i.e 45:29 (1)
     let p3 = """</div></td>"""
-    let strategy = getCalcStrategy !calcRule
+    let strategy = getCalcStrategy Config.Cup.CalcRule
     let pointsFormated = strategy.FormatPoints points
     let tsString = formatSeconds2Time time
     let t = sprintf "%s (%i)" tsString pos
     p1 + pointsFormated + p2 + t + p3
 
 let printDetailedResultRow results =
-    let races = [1..!maxEvents] |> List.map (fun i -> (!resultFilePrefix) + i.ToString("D2") + "_" + (!year).ToString())
+    let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> (Config.Cup.ResultFilePrefix) + i.ToString("D2") + "_" + (Config.Cup.Year).ToString())
     [ for r in races do
           let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
           if Seq.isEmpty p then yield "<td/>"
@@ -35,13 +34,13 @@ let printDetailedResultRow results =
 
 let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<string * 'c * PersonalRaceResult * bool>>) =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""
-    let part2 = [1..!maxEvents] |> List.map buildRankingHeader |> combineListToString
+    let part2 = [1..Config.Cup.NumberOfEvents] |> List.map buildRankingHeader |> combineListToString
     let part3 = "</tr>"
 
     let sRes = recalcPositions catResult
                |> Seq.mapi (fun i (rank, item) ->
                             let name, cat, clubId, total, singleResults = item
-                            let c = getClubNameById !orgCfg clubId
+                            let c = getClubNameById clubId
                             let rowClass = 
                                 if (i % 2 = 0) then "cal_out_white"
                                 else "cal_out_grey"
@@ -52,7 +51,7 @@ let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<s
                             let r5 = """</div></td>"""
                             let details = printDetailedResultRow singleResults |> combineListToString
                             let r6 = "</tr>"
-                            let strategy = getCalcStrategy !calcRule
+                            let strategy = getCalcStrategy Config.Cup.CalcRule
                             let totalFormated = strategy.FormatPoints total
                             r1 + rank.ToString() + r2 + name + r3 + c + r4 + totalFormated + r5 + details + r6)
                 |> Seq.fold (fun str x -> str + x) ""
@@ -63,12 +62,13 @@ let printResult classHeader (catResult : seq<string * 'a * int * decimal * seq<s
 let buildResultHtml catResults (outputFile:string)=
     let htmlOpen = "<html>"
     let htmlClose = "</html>"
-    let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + (!cupName) + """</title></head>"""
-    let bodyTop = """<body><h1>Rangliste</h1><br/><br/><div>Gewertet werden die <strong>""" + (!takeBest).ToString() + """</strong> besten Ergebnisse von <strong>""" + (!maxEvents).ToString() + """</strong>.</div><br/><br/><br/><br/>"""
+    let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + Config.Cup.Name + """</title></head>"""
+    let bodyTop = """<body><h1>Rangliste</h1><br/><br/><div>Gewertet werden die <strong>""" + Config.Cup.TakeBest.ToString() + """</strong> besten Ergebnisse von <strong>""" + Config.Cup.NumberOfEvents.ToString() + """</strong>.</div><br/><br/><br/><br/>"""
     let bodyBottom = """<br/><div>(c) """ + System.DateTime.Now.Year.ToString() + """ by solv.at | Daten: ANNE / oefol.at und der veranstaltende Verein</div><br/><div>webmaster@solv.at</div><div>Erstellt: """ + System.DateTime.Now.ToString("R") + """</div></body>"""
 
+    let classCfg = Config.Classes |> Array.toList
     let catRes =
-        [ for cfg in !classCfg do  
+        [ for cfg in classCfg do  
             let classHeader = sprintf "%s (%s)" cfg.Name cfg.DiplayName
             let exists = catResults |> Seq.exists(fun (catId, _) -> catId = cfg.Id)
             if exists then

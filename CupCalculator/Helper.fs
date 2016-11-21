@@ -57,8 +57,8 @@ let levDist (strOne : string) (strTwo : string) =
                 )
     distArray.[strOne.Length, strTwo.Length]
 
-let getClubNameById (organisations:CupTypes.XmlConfig.Organisation list) (id:int) =
-    let n = organisations |> List.find(fun x -> x.Id = id)
+let getClubNameById (id:int) =
+    let n = Config.Organisations |> Array.toList |> List.find(fun x -> x.Id = id)
     n.Name
 
 let formatSeconds2Time time =

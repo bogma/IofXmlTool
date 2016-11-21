@@ -15,6 +15,15 @@ type XmlResult = XmlProvider<"resources/ResultListSampleData.xml">
 //type EventResult = { Name : string; Date : System.DateTime; Results : ClassResult list }
 //type Cup = { Title : string; Year : int; Results : EventResult list }
 
+let version = "1.0.0.0"
+let debugMode = ref false
+
+let classCfgIds : int list ref = ref List.Empty
+let orgCfgIds : int list ref = ref List.Empty
+
+let mutable Config : XmlConfig.CupConfiguration = XmlConfig.Load("./resources/config.xml")
+
+
 type ParsedResult = {
     ClassId : int;
     OrganisationId : int;

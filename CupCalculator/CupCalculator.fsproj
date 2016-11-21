@@ -59,7 +59,6 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CupTypes.fs" />
     <Compile Include="Calc.fs" />
-    <Compile Include="ProgramSettings.fs" />
     <Compile Include="Helper.fs" />
     <Compile Include="Parsing.fs" />
     <Compile Include="HtmlOutput.fs" />
@@ -69,7 +68,9 @@
     <Content Include="packages.config" />
     <None Include="datastandard_IOF_30.xsd" />
     <None Include="TODOs.txt" />
-    <None Include="resources\config.xml" />
+    <None Include="resources\config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="resources\default.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

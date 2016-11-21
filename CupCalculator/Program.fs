@@ -6,7 +6,6 @@ open CupTypes
 open Calc
 open Helper
 open Parsing
-open ProgramSettings
 open HtmlOutput
 open PdfOutput
 open FSharp.Data
@@ -23,15 +22,16 @@ let buildEventResult (inputFile : string) =
     let eventMultiplier = 
         let p = fileName.IndexOf("_")
         let s = fileName.Substring(p-2, 2).AsInteger()
-        let exists = !eventProps |> List.exists (fun x -> x.Num = s)
+        let eventList = Config.Cup.Events |> Array.toList
+        let exists = eventList |> List.exists (fun x -> x.Num = s)
         if exists then 
-            match !eventProps |> List.filter (fun x -> x.Num = s) |> List.map (fun x -> x.Multiply) |> List.head with
+            match eventList |> List.filter (fun x -> x.Num = s) |> List.map (fun x -> x.Multiply) |> List.head with
             | Some(x) -> x
             | _ -> 1.0m
         else 1.0m
 
     let calcSingleResult winningTime (item : ParsedResult) i =
-        let strategy = getCalcStrategy !calcRule
+        let strategy = getCalcStrategy Config.Cup.CalcRule
         let points = strategy.Execute winningTime (decimal item.Time) i * eventMultiplier
         { 
             OrganisationId = item.OrganisationId;
@@ -68,19 +68,10 @@ let main argv =
         if argv.Length <= 1 || argv.[1] = "" then "config.xml"
         else argv.[1]
 
-    let Config = XmlConfig.Load(Path.Combine(inputPath, configFile))
-    cupName := Config.Cup.Name 
-    takeBest := Config.Cup.TakeBest
-    maxEvents := Config.Cup.NumberOfEvents
-    classCfg := Config.Classes  |> Array.toList
+    Config <- XmlConfig.Load(Path.Combine(inputPath, configFile))
+
     classCfgIds := Config.Classes |> Array.toList |> List.map (fun x -> x.Id)
-    orgCfg := Config.Organisations  |> Array.toList
     orgCfgIds := Config.Organisations  |> Array.toList |> List.map (fun x -> x.Id)
-    eventProps := Config.Cup.Events |> Array.toList
-    year := Config.Cup.Year
-    calcRule := Config.Cup.CalcRule
-    resultFilePrefix := Config.Cup.ResultFilePrefix
-    orientation := Config.Output.Pdf.Orientation
 
     let competitions = getFiles inputPath "*_*.xml" false
 
@@ -100,13 +91,13 @@ let main argv =
                         let countingResults =
                             r
                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
-                            |> Seq.truncate !takeBest
+                            |> Seq.truncate Config.Cup.TakeBest
                         let x =
                             r
                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
                             |> Seq.mapi (fun i (a, b, c) -> 
                                             let counts =
-                                                if i < !takeBest then true
+                                                if i < Config.Cup.TakeBest then true
                                                 else false
                                             (a, b, c, counts))
                         let sum = 
@@ -131,12 +122,10 @@ let main argv =
         if cs.Length > 0 then
             printfn "%A" cs
 
-    let outputFileName = "cup_" + (!year).ToString() + ".html"
-    let outputFile = Path.Combine(inputPath, outputFileName) 
+    let outputFile = Path.Combine(inputPath, Config.Output.Html.FileName) 
     buildResultHtml catResults outputFile |> ignore
 
-    let outputFileName = "cup_" + (!year).ToString() + ".pdf"
-    let outputFile = Path.Combine(inputPath, outputFileName)   
+    let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
     buildResultPdf catResults outputFile|> ignore
 
     System.Console.ReadLine() |> ignore

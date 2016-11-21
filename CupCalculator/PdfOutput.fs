@@ -3,7 +3,6 @@
 open CupTypes
 open Calc
 open Helper
-open ProgramSettings
 
 open MigraDoc.DocumentObjectModel
 open MigraDoc.DocumentObjectModel.Tables
@@ -41,7 +40,7 @@ let setStyles (document:Document) =
 
 let head (document:Document) =
     let section = document.AddSection()
-    match (!orientation) with
+    match Config.Output.Pdf.Orientation with
     | "Portrait" -> section.PageSetup.Orientation <- Orientation.Portrait
     | _ -> section.PageSetup.Orientation <- Orientation.Landscape
 
@@ -51,11 +50,11 @@ let head (document:Document) =
     //let image = section.AddImage("../../../../assets/images/Logo landscape.png")
     //image.Width <- new Unit(10.0, UnitType.Centimeter)
     
-    let paragraph = section.AddParagraph("Rangliste - " + (!cupName));
+    let paragraph = section.AddParagraph("Rangliste - " + Config.Cup.Name)
     paragraph.Format.Font.Size <- new Unit(16.0)
-    paragraph.Format.Font.Color <- Colors.DarkRed;
+    paragraph.Format.Font.Color <- Colors.DarkRed
 
-    let paragraph = section.AddParagraph("Gewertet werden die " + (!takeBest).ToString() + " besten Ergebnisse von " + (!maxEvents).ToString() + ".");
+    let paragraph = section.AddParagraph("Gewertet werden die " + Config.Cup.TakeBest.ToString() + " besten Ergebnisse von " + Config.Cup.NumberOfEvents.ToString() + ".");
     paragraph.Format.Font.Size <- new Unit(12.0)
     paragraph.Format.Font.Color <- Colors.DarkRed;
 
@@ -77,7 +76,7 @@ let defineFooter (document:Document) =
 
 let printSingleDetailedResult points time pos counts =
     let formattedText = new FormattedText()
-    let strategy = getCalcStrategy !calcRule
+    let strategy = getCalcStrategy Config.Cup.CalcRule
     let pointsFormatted = strategy.FormatPoints points
     let tsString = formatSeconds2Time time
     let format = 
@@ -89,7 +88,7 @@ let printSingleDetailedResult points time pos counts =
     formattedText    
 
 let printDetailedResultCells results (row:Row) =              
-    let races = [1..!maxEvents] |> List.map (fun i -> (!resultFilePrefix) + i.ToString("D2") + "_" + (!year).ToString())
+    let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> Config.Cup.ResultFilePrefix + i.ToString("D2") + "_" + Config.Cup.Year.ToString())
     races |> List.iteri (fun i r ->
                              let cell = row.Cells.[i + 3]
                              let p = results |> Seq.filter (fun (file, _, _, _) -> file = r)
@@ -114,7 +113,7 @@ let addTable (document:Document) classHeader (catResult : seq<string * 'a * int 
     column.Format.Alignment <- ParagraphAlignment.Left
     let column = table.AddColumn(Unit.FromCentimeter(2.0))
     column.Format.Alignment <- ParagraphAlignment.Right
-    [1..!maxEvents] |> List.iteri (fun i x -> 
+    [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x -> 
                                        let column = table.AddColumn(Unit.FromCentimeter(2.0))
                                        column.Format.Alignment <- ParagraphAlignment.Center)
 
@@ -127,20 +126,20 @@ let addTable (document:Document) classHeader (catResult : seq<string * 'a * int 
     cell.AddParagraph("Name") |> ignore
     let cell = row.Cells.[2]
     cell.AddParagraph("Punkte") |> ignore
-    [1..!maxEvents] |> List.iteri (fun i x ->
+    [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x ->
                                        let cell = row.Cells.[i + 3]
                                        cell.AddParagraph(sprintf "%i. SC" x) |> ignore)
 
     recalcPositions catResult 
        |> Seq.iteri (fun i (rank, item) ->
-                            let name, cat, club, total, singleResults = item
-                            let c = getClubNameById (!orgCfg) club
+                            let name, cat, clubId, total, singleResults = item
+                            let c = getClubNameById clubId
                             let row = table.AddRow()
 
                             if (i % 2 = 0) then row.Shading.Color <- Colors.White
                             else row.Shading.Color <- Colors.LightGray
 
-                            let strategy = getCalcStrategy !calcRule
+                            let strategy = getCalcStrategy Config.Cup.CalcRule
                             let totalFormated = strategy.FormatPoints total
 
                             let cell = row.Cells.[0]
@@ -157,14 +156,15 @@ let addTable (document:Document) classHeader (catResult : seq<string * 'a * int 
 
 let buildResultPdf catResults (outputFile:string) =
     let doc = new Document()
-    doc.Info.Title <- (!cupName)
+    doc.Info.Title <- Config.Cup.Name
     
     setStyles doc |> ignore
     head doc |> ignore
     defineFooter doc |> ignore
 
+    let classCfg = Config.Classes |> Array.toList
     let catRes =
-        [ for cfg in !classCfg do  
+        [ for cfg in classCfg do  
             let classHeader = sprintf "%s (%s)" cfg.Name cfg.DiplayName
             let exists = catResults |> Seq.exists(fun (catId, _) -> catId = cfg.Id)
             if exists then
