@@ -9,6 +9,8 @@ open MigraDoc.DocumentObjectModel.Tables
 open MigraDoc.DocumentObjectModel.Shapes
 open MigraDoc.Rendering
 
+open System
+
 let setStyles (document:Document) =
     // default style
     let style = document.Styles.[StyleNames.Normal]
@@ -74,18 +76,24 @@ let defineFooter (document:Document) =
     paragraph.Format.Alignment <- ParagraphAlignment.Center
     0
 
-let printSingleDetailedResult points time pos counts =
+let printSingleDetailedResult eventResult =
     let formattedText = new FormattedText()
     let strategy = getCalcStrategy Config.Cup.CalcRule
-    let pointsFormatted = strategy.FormatPoints points
-    let tsString = formatSeconds2Time time
-    let format = 
-         if counts then TextFormat.Bold
-         else TextFormat.Italic
-    formattedText.AddFormattedText(pointsFormatted, format) |> ignore
-    formattedText.AddFormattedText("\n") |> ignore
-    formattedText.AddFormattedText(sprintf "%s (%i)" tsString pos) |> ignore
-    formattedText    
+    let pointsFormatted = strategy.FormatPoints eventResult.PRR.Points
+    let tsString = formatSeconds2Time eventResult.PRR.Time
+
+    if (eventResult.PRR.Status = "OK") then
+        let format = 
+             if eventResult.ResultCounts then TextFormat.Bold
+             else TextFormat.Italic
+        formattedText.AddFormattedText(pointsFormatted, format) |> ignore
+        formattedText.AddFormattedText("\n") |> ignore
+        formattedText.AddFormattedText(sprintf "%s (%i)" tsString eventResult.PRR.Position) |> ignore
+        formattedText
+    else
+        let r = explode eventResult.PRR.Status |> List.filter (fun x -> Char.IsUpper(x)) |> implode
+        formattedText.AddFormattedText(r) |> ignore
+        formattedText
 
 let printDetailedResultCells (results:seq<EventResult>) (row:Row) =              
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> Config.Cup.ResultFilePrefix + i.ToString("D2") + "_" + Config.Cup.Year.ToString())
@@ -96,7 +104,7 @@ let printDetailedResultCells (results:seq<EventResult>) (row:Row) =
                                  cell.AddParagraph("") |> ignore
                              else 
                                 let eventResult = p |> Seq.take 1 |> Seq.exactlyOne
-                                let txt = printSingleDetailedResult eventResult.PRR.Points eventResult.PRR.Time eventResult.PRR.Position eventResult.ResultCounts
+                                let txt = printSingleDetailedResult eventResult
                                 let paragraph = cell.AddParagraph()
                                 paragraph.Add(txt) |> ignore)
 
@@ -111,7 +119,7 @@ let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
     column.Format.Alignment <- ParagraphAlignment.Center
     let column = table.AddColumn(Unit.FromCentimeter(5.0))
     column.Format.Alignment <- ParagraphAlignment.Left
-    let column = table.AddColumn(Unit.FromCentimeter(2.0))
+    let column = table.AddColumn(Unit.FromCentimeter(1.5))
     column.Format.Alignment <- ParagraphAlignment.Right
     [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x -> 
                                        let column = table.AddColumn(Unit.FromCentimeter(2.0))
@@ -146,7 +154,10 @@ let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
                             let cell = row.Cells.[1]
                             cell.AddParagraph(sprintf "%s\n%s" item.PersonName c) |> ignore
                             let cell = row.Cells.[2]
-                            cell.AddParagraph(totalFormated) |> ignore
+                            let para = cell.AddParagraph()
+                            let txt = new FormattedText()
+                            txt.AddFormattedText(totalFormated, TextFormat.Bold) |> ignore
+                            para.Add(txt)
                             printDetailedResultCells item.Results row)
         |> ignore
 
