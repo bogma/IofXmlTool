@@ -3,5 +3,10 @@
 		-p path
 		-c config file (default: config.xml)
 		-cp config path (default: path)
-//TODO: find and report simmilar names
 //TODO: exeption handling
+
+//TODO: support csv results
+//TODO: support html results
+//TODO: events - name, date for output
+//TODO: CupConfigurator 
+//TODO: support all states for runners (MP, DNS, DNF, ..), filter via config file
