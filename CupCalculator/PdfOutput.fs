@@ -9,6 +9,8 @@ open MigraDoc.DocumentObjectModel.Tables
 open MigraDoc.DocumentObjectModel.Shapes
 open MigraDoc.Rendering
 
+open System
+
 let setStyles (document:Document) =
     // default style
     let style = document.Styles.[StyleNames.Normal]
@@ -89,7 +91,8 @@ let printSingleDetailedResult eventResult =
         formattedText.AddFormattedText(sprintf "%s (%i)" tsString eventResult.PRR.Position) |> ignore
         formattedText
     else
-        formattedText.AddFormattedText(eventResult.PRR.Status) |> ignore
+        let r = explode eventResult.PRR.Status |> List.filter (fun x -> Char.IsUpper(x)) |> implode
+        formattedText.AddFormattedText(r) |> ignore
         formattedText
 
 let printDetailedResultCells (results:seq<EventResult>) (row:Row) =              
@@ -116,7 +119,7 @@ let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
     column.Format.Alignment <- ParagraphAlignment.Center
     let column = table.AddColumn(Unit.FromCentimeter(5.0))
     column.Format.Alignment <- ParagraphAlignment.Left
-    let column = table.AddColumn(Unit.FromCentimeter(2.0))
+    let column = table.AddColumn(Unit.FromCentimeter(1.5))
     column.Format.Alignment <- ParagraphAlignment.Right
     [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x -> 
                                        let column = table.AddColumn(Unit.FromCentimeter(2.0))
@@ -151,7 +154,10 @@ let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
                             let cell = row.Cells.[1]
                             cell.AddParagraph(sprintf "%s\n%s" item.PersonName c) |> ignore
                             let cell = row.Cells.[2]
-                            cell.AddParagraph(totalFormated) |> ignore
+                            let para = cell.AddParagraph()
+                            let txt = new FormattedText()
+                            txt.AddFormattedText(totalFormated, TextFormat.Bold) |> ignore
+                            para.Add(txt)
                             printDetailedResultCells item.Results row)
         |> ignore
 

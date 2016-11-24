@@ -26,7 +26,7 @@
     </DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
-    <StartArguments>"C:/ol/events/2016/SchulCup"</StartArguments>
+    <StartArguments>"C:/ol/events/2016/SbgCup"</StartArguments>
     <Commandlineparameters>"../../../../ol/data"</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

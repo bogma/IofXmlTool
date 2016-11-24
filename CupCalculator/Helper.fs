@@ -82,3 +82,10 @@ let recalcPositions (classResult : seq<CupResult>) =
     (totalPositions, totalGrouped) 
                    ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> i1, item))
                    |> flattenSeqOfSeq
+
+let explode (s:string) =
+        [for c in s -> c]
+let implode (xs:char list) =
+        let sb = System.Text.StringBuilder(xs.Length)
+        xs |> List.iter (sb.Append >> ignore)
+        sb.ToString()

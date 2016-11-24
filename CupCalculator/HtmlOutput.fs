@@ -3,6 +3,7 @@
 open CupTypes
 open Calc
 open Helper
+open System
 open System.IO
 
 let buildRankingHeader i =
@@ -24,7 +25,8 @@ let printSingleDetailedResult eventResult =
         let t = sprintf "%s (%i)" tsString eventResult.PRR.Position
         p1 + pointsFormated + p2 + t + p3
     else
-        """<td align="center"><div style="overflow:hidden">""" + eventResult.PRR.Status + p3
+        let r = explode eventResult.PRR.Status |> List.filter (fun x -> Char.IsUpper(x)) |> implode
+        """<td align="center"><div style="overflow:hidden">""" + r + p3
 
 let printDetailedResultRow (results : seq<EventResult>) =
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> (Config.Cup.ResultFilePrefix) + i.ToString("D2") + "_" + (Config.Cup.Year).ToString())

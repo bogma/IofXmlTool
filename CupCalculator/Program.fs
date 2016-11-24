@@ -49,7 +49,6 @@ let buildEventResult (inputFile : string) =
     let r = parseResultXml inputFile
                 |> List.filter (fun a -> List.exists (fun org -> org = a.OrganisationId) !orgCfgIds)
                 |> List.filter (fun a -> List.exists (fun cl -> cl = a.ClassId) !classCfgIds)
- //               |> List.filter (fun a -> a.Status = "OK")
                 |> Seq.groupBy (fun i -> i.ClassId)
                 |> Seq.map (fun pair ->
                                 let clId = fst pair
@@ -66,8 +65,9 @@ let buildEventResult (inputFile : string) =
                                 let res = (cupPositions, timeGroupedRes) 
                                                 ||> Seq.map2 (fun i1 i2 -> snd i2 
                                                                             |> Seq.map (fun item -> calcSingleResult (decimal winningTime) item i1))
+                                let includeStatus = Config.Cup.IncludeStatus.Split ','
                                 let others = clRes
-                                                |> Seq.filter (fun x -> x.Status <> "OK")
+                                                |> Seq.filter (fun x -> includeStatus |> Array.exists (fun y -> y = x.Status))
                                                 |> Seq.map (fun x -> {
                                                                         OrganisationId = x.OrganisationId;
                                                                         Name = x.GivenName + " " + x.FamilyName;
