@@ -74,18 +74,23 @@ let defineFooter (document:Document) =
     paragraph.Format.Alignment <- ParagraphAlignment.Center
     0
 
-let printSingleDetailedResult points time pos counts =
+let printSingleDetailedResult eventResult =
     let formattedText = new FormattedText()
     let strategy = getCalcStrategy Config.Cup.CalcRule
-    let pointsFormatted = strategy.FormatPoints points
-    let tsString = formatSeconds2Time time
-    let format = 
-         if counts then TextFormat.Bold
-         else TextFormat.Italic
-    formattedText.AddFormattedText(pointsFormatted, format) |> ignore
-    formattedText.AddFormattedText("\n") |> ignore
-    formattedText.AddFormattedText(sprintf "%s (%i)" tsString pos) |> ignore
-    formattedText    
+    let pointsFormatted = strategy.FormatPoints eventResult.PRR.Points
+    let tsString = formatSeconds2Time eventResult.PRR.Time
+
+    if (eventResult.PRR.Status = "OK") then
+        let format = 
+             if eventResult.ResultCounts then TextFormat.Bold
+             else TextFormat.Italic
+        formattedText.AddFormattedText(pointsFormatted, format) |> ignore
+        formattedText.AddFormattedText("\n") |> ignore
+        formattedText.AddFormattedText(sprintf "%s (%i)" tsString eventResult.PRR.Position) |> ignore
+        formattedText
+    else
+        formattedText.AddFormattedText(eventResult.PRR.Status) |> ignore
+        formattedText
 
 let printDetailedResultCells (results:seq<EventResult>) (row:Row) =              
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> Config.Cup.ResultFilePrefix + i.ToString("D2") + "_" + Config.Cup.Year.ToString())
@@ -96,7 +101,7 @@ let printDetailedResultCells (results:seq<EventResult>) (row:Row) =
                                  cell.AddParagraph("") |> ignore
                              else 
                                 let eventResult = p |> Seq.take 1 |> Seq.exactlyOne
-                                let txt = printSingleDetailedResult eventResult.PRR.Points eventResult.PRR.Time eventResult.PRR.Position eventResult.ResultCounts
+                                let txt = printSingleDetailedResult eventResult
                                 let paragraph = cell.AddParagraph()
                                 paragraph.Add(txt) |> ignore)
 

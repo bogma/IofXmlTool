@@ -22,7 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Debug\CupCalculator.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
     <StartArguments>"C:/ol/events/2016/SchulCup"</StartArguments>

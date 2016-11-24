@@ -11,17 +11,20 @@ let buildRankingHeader i =
     let s = sprintf "%i. SC" i
     p1 + s + p2
 
-let printSingleDetailedResult points time pos counts =
-    let p1 = 
-        if counts then """<td align="center"><div style="overflow:hidden">"""
+let printSingleDetailedResult eventResult =
+    let p1 =
+        if eventResult.ResultCounts then """<td align="center"><div style="overflow:hidden">"""
         else """<td align="center"><div style="overflow:hidden;text-decoration:line-through;">""" // + points i.e 100,00
     let p2 = """</div><div class="time" style="overflow:hidden">""" // + time (pos) i.e 45:29 (1)
     let p3 = """</div></td>"""
-    let strategy = getCalcStrategy Config.Cup.CalcRule
-    let pointsFormated = strategy.FormatPoints points
-    let tsString = formatSeconds2Time time
-    let t = sprintf "%s (%i)" tsString pos
-    p1 + pointsFormated + p2 + t + p3
+    if (eventResult.PRR.Status = "OK") then
+        let strategy = getCalcStrategy Config.Cup.CalcRule
+        let pointsFormated = strategy.FormatPoints eventResult.PRR.Points
+        let tsString = formatSeconds2Time eventResult.PRR.Time
+        let t = sprintf "%s (%i)" tsString eventResult.PRR.Position
+        p1 + pointsFormated + p2 + t + p3
+    else
+        """<td align="center"><div style="overflow:hidden">""" + eventResult.PRR.Status + p3
 
 let printDetailedResultRow (results : seq<EventResult>) =
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> (Config.Cup.ResultFilePrefix) + i.ToString("D2") + "_" + (Config.Cup.Year).ToString())
@@ -29,8 +32,8 @@ let printDetailedResultRow (results : seq<EventResult>) =
           let p = results |> Seq.filter (fun eventResult -> eventResult.EventFile = r)
           if Seq.isEmpty p then yield "<td/>"
           else 
-            let eventResult = p |> Seq.take 1 |> Seq.exactlyOne
-            yield printSingleDetailedResult eventResult.PRR.Points eventResult.PRR.Time eventResult.PRR.Position eventResult.ResultCounts ]
+            let eRes = p |> Seq.take 1 |> Seq.exactlyOne
+            yield printSingleDetailedResult eRes]
 
 let printResult classHeader (classResult : seq<CupResult>) =
     let part1 = """<div><div class="category_title">""" + classHeader + """</div><br/><table border="0" cellpadding="2" cellspacing="0" width="750"><tbody><tr><td class="ranking_header" valign="bottom" align="right">Pl</td><td class="ranking_header" valign="bottom">Name<br/>Verein</td><td class="ranking_header" valign="bottom" align="center" style="border-right:1px solid #888;">Punkte</td>"""

@@ -54,15 +54,29 @@ let buildEventResult (inputFile : string) =
                 |> Seq.map (fun pair ->
                                 let clId = fst pair
                                 let clRes = snd pair
-                                let winningTime = clRes |> Seq.filter (fun x -> x.Status = "OK") |> Seq.map (fun x -> x.Time) |> Seq.min
-                                let timeGroupedRes = clRes 
+                                let winningTime = clRes 
+                                                    |> Seq.filter (fun x -> x.Status = "OK")
+                                                    |> Seq.map (fun x -> x.Time)
+                                                    |> Seq.min
+                                let timeGroupedRes = clRes
+                                                        |> Seq.filter (fun x -> x.Status = "OK")
                                                         |> Seq.sortBy (fun x -> x.Time)
                                                         |> Seq.groupBy (fun x -> x.Time)
                                 let cupPositions = getPositionSeq 1 (getIntervalList timeGroupedRes)
                                 let res = (cupPositions, timeGroupedRes) 
                                                 ||> Seq.map2 (fun i1 i2 -> snd i2 
                                                                             |> Seq.map (fun item -> calcSingleResult (decimal winningTime) item i1))
-                                clId, flattenSeqOfSeq res)
+                                let others = clRes
+                                                |> Seq.filter (fun x -> x.Status <> "OK")
+                                                |> Seq.map (fun x -> {
+                                                                        OrganisationId = x.OrganisationId;
+                                                                        Name = x.GivenName + " " + x.FamilyName;
+                                                                        Points = 0m;
+                                                                        Time = x.Time;
+                                                                        Position = 0;
+                                                                        Status = x.Status;
+                                                                     })
+                                clId, Seq.append (flattenSeqOfSeq res) others)
     fileName, r
 
 [<EntryPoint>]
@@ -130,8 +144,8 @@ let main argv =
     let outputFile = Path.Combine(inputPath, Config.Output.Html.FileName) 
     buildResultHtml classResults outputFile |> ignore
 
-//    let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
-//    buildResultPdf classResults outputFile|> ignore
+    let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
+    buildResultPdf classResults outputFile|> ignore
 
     System.Console.ReadLine() |> ignore
 
