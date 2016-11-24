@@ -32,27 +32,32 @@ let buildEventResult (inputFile : string) =
 
     let calcSingleResult winningTime (item : ParsedResult) i =
         let strategy = getCalcStrategy Config.Cup.CalcRule
-        let points = strategy.Execute winningTime (decimal item.Time) i * eventMultiplier
+        let points = 
+            if (item.Status = "OK") then
+                strategy.Execute winningTime (decimal item.Time) i * eventMultiplier
+            else
+                0m
         { 
             OrganisationId = item.OrganisationId;
             Name = item.GivenName + " " + item.FamilyName;
             Points = Math.Round(points, 2);
             Time = item.Time;
             Position = i;
+            Status = item.Status;
         }
     
     let r = parseResultXml inputFile
                 |> List.filter (fun a -> List.exists (fun org -> org = a.OrganisationId) !orgCfgIds)
                 |> List.filter (fun a -> List.exists (fun cl -> cl = a.ClassId) !classCfgIds)
-                |> List.filter (fun a -> a.Status = "OK")
+ //               |> List.filter (fun a -> a.Status = "OK")
                 |> Seq.groupBy (fun i -> i.ClassId)
                 |> Seq.map (fun pair ->
                                 let clId = fst pair
                                 let clRes = snd pair
+                                let winningTime = clRes |> Seq.filter (fun x -> x.Status = "OK") |> Seq.map (fun x -> x.Time) |> Seq.min
                                 let timeGroupedRes = clRes 
                                                         |> Seq.sortBy (fun x -> x.Time)
                                                         |> Seq.groupBy (fun x -> x.Time)
-                                let winningTime, _ = timeGroupedRes |> Seq.head
                                 let cupPositions = getPositionSeq 1 (getIntervalList timeGroupedRes)
                                 let res = (cupPositions, timeGroupedRes) 
                                                 ||> Seq.map2 (fun i1 i2 -> snd i2 
@@ -125,8 +130,8 @@ let main argv =
     let outputFile = Path.Combine(inputPath, Config.Output.Html.FileName) 
     buildResultHtml classResults outputFile |> ignore
 
-    let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
-    buildResultPdf classResults outputFile|> ignore
+//    let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
+//    buildResultPdf classResults outputFile|> ignore
 
     System.Console.ReadLine() |> ignore
 

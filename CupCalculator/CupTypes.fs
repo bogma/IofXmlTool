@@ -35,6 +35,7 @@ type PersonalRaceResult = {
     Points : decimal;
     Time : int;
     Position : int
+    Status : string
 }
 
 type EventResult = {
