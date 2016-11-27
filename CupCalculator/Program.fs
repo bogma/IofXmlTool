@@ -65,7 +65,7 @@ let buildEventResult (inputFile : string) =
                                 let res = (cupPositions, timeGroupedRes) 
                                                 ||> Seq.map2 (fun i1 i2 -> snd i2 
                                                                             |> Seq.map (fun item -> calcSingleResult (decimal winningTime) item i1))
-                                let includeStatus = Config.Cup.IncludeStatus.Split ','
+                                let includeStatus = Config.Cup.IncludeStatus.Replace(" ", "").Split ','
                                 let others = clRes
                                                 |> Seq.filter (fun x -> includeStatus |> Array.exists (fun y -> y = x.Status))
                                                 |> Seq.map (fun x -> {
