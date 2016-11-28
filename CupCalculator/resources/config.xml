@@ -31,4 +31,8 @@
     <Html fileName="cup-2016.html" rowStyle="singleLine"></Html>
     <Pdf fileName="cup-2016.pdf" rowStyle="doubleLine" orientation="Landscape" image=""></Pdf>
   </Output>
+  <Names>
+    <Name name="Bubu" aliasFor="der Hund, the great"/>
+    <Name name="Tcharly Hackl" aliasFor="Karl Hackl"/>
+  </Names>
 </CupConfiguration>

@@ -30,6 +30,14 @@ let buildEventResult (inputFile : string) =
             | _ -> 1.0m
         else 1.0m
 
+    let setName name =
+        let names = Config.Names
+        let n = names |> Array.filter (fun x -> x.AliasFor.Contains(name))
+        if (n.Length > 0) then
+            n.[0].Name
+        else
+            name
+
     let calcSingleResult winningTime (item : ParsedResult) i =
         let strategy = getCalcStrategy Config.Cup.CalcRule
         let points = 
@@ -39,7 +47,7 @@ let buildEventResult (inputFile : string) =
                 0m
         { 
             OrganisationId = item.OrganisationId;
-            Name = item.GivenName + " " + item.FamilyName;
+            Name = setName (item.GivenName + " " + item.FamilyName);
             Points = Math.Round(points, 2);
             Time = item.Time;
             Position = i;
