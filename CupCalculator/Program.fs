@@ -78,7 +78,7 @@ let buildEventResult (inputFile : string) =
                                                 |> Seq.filter (fun x -> includeStatus |> Array.exists (fun y -> y = x.Status))
                                                 |> Seq.map (fun x -> {
                                                                         OrganisationId = x.OrganisationId;
-                                                                        Name = x.GivenName + " " + x.FamilyName;
+                                                                        Name = setName (x.GivenName + " " + x.FamilyName);
                                                                         Points = 0m;
                                                                         Time = x.Time;
                                                                         Position = 0;
