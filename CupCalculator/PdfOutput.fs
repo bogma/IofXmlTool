@@ -15,6 +15,7 @@ let setStyles (document:Document) =
     // default style
     let style = document.Styles.[StyleNames.Normal]
     style.Font.Name <- "Segoe UI"
+    style.Font.Size <- new Unit(8.0)
 
     // Heading1 to Heading9 are predefined styles with an outline level -> creates bookmark
     let style = document.Styles.[StyleNames.Heading1]
@@ -41,7 +42,7 @@ let defineContentSection (document:Document) =
 
 //    section.PageSetup.TopMargin <- new Unit(15.0, UnitType.Millimeter)
 //    section.PageSetup.BottomMargin <- new Unit(10.0, UnitType.Millimeter)
-//    section.PageSetup.LeftMargin <- new Unit(5.0, UnitType.Millimeter)
+    section.PageSetup.LeftMargin <- new Unit(10.0, UnitType.Millimeter)
 //    section.PageSetup.RightMargin <- new Unit(5.0, UnitType.Millimeter)
 
     match Config.Output.Pdf.Orientation with
@@ -79,8 +80,7 @@ let printSingleDetailedResult eventResult =
              if eventResult.ResultCounts then TextFormat.Bold
              else TextFormat.Italic
         formattedText.AddFormattedText(pointsFormatted, format) |> ignore
-        formattedText.AddFormattedText("\n") |> ignore
-        formattedText.AddFormattedText(sprintf "%s (%i)" tsString eventResult.PRR.Position) |> ignore
+        formattedText.AddFormattedText(sprintf " / %s (%i)" tsString eventResult.PRR.Position) |> ignore
         formattedText
     else
         let r = explode eventResult.PRR.Status |> List.filter (fun x -> Char.IsUpper(x)) |> implode
@@ -90,7 +90,7 @@ let printSingleDetailedResult eventResult =
 let printDetailedResultCells (results:seq<EventResult>) (row:Row) =              
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> Config.Cup.ResultFilePrefix + i.ToString("D2") + "_" + Config.Cup.Year.ToString())
     races |> List.iteri (fun i r ->
-                             let cell = row.Cells.[i + 3]
+                             let cell = row.Cells.[i + 4]
                              let p = results |> Seq.filter (fun eventResult -> eventResult.EventFile = r)
                              if Seq.isEmpty p then 
                                  cell.AddParagraph("") |> ignore
@@ -100,35 +100,80 @@ let printDetailedResultCells (results:seq<EventResult>) (row:Row) =
                                 let paragraph = cell.AddParagraph()
                                 paragraph.Add(txt) |> ignore)
 
-let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
-    document.LastSection.AddParagraph(classHeader, StyleNames.Heading1) |> ignore
-
+let createTable (document:Document) =
     let table = new Table()
     table.Borders.Width <- new Unit(0.75)
-
-    // add all columns
-    let column = table.AddColumn(Unit.FromCentimeter(1.0))
+        
+    // add all columns:
+    // overall position
+    let column = table.AddColumn(Unit.FromCentimeter(0.7))
     column.Format.Alignment <- ParagraphAlignment.Center
-    let column = table.AddColumn(Unit.FromCentimeter(5.0))
+    // name
+    let column = table.AddColumn(Unit.FromCentimeter(3.8))
     column.Format.Alignment <- ParagraphAlignment.Left
-    let column = table.AddColumn(Unit.FromCentimeter(1.5))
+    // club
+    let column = table.AddColumn(Unit.FromCentimeter(2.5))
+    column.Format.Alignment <- ParagraphAlignment.Left
+    // overall points
+    let column = table.AddColumn(Unit.FromCentimeter(1.0))
     column.Format.Alignment <- ParagraphAlignment.Right
-    [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x -> 
-                                       let column = table.AddColumn(Unit.FromCentimeter(2.0))
+    // cups
+    [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x ->
+                                       // race details
+                                       let column = table.AddColumn(Unit.FromCentimeter(2.2))
                                        column.Format.Alignment <- ParagraphAlignment.Center)
 
     // add header row
     let row = table.AddRow()
     row.Shading.Color <- Colors.PaleGoldenrod
+
     let cell = row.Cells.[0]
-    cell.AddParagraph("Pl") |> ignore
+    cell.MergeDown <- 1
+    cell.VerticalAlignment <- VerticalAlignment.Center
+    cell.AddParagraph("Rg") |> ignore
     let cell = row.Cells.[1]
+    cell.MergeDown <- 1
+    cell.VerticalAlignment <- VerticalAlignment.Center
     cell.AddParagraph("Name") |> ignore
     let cell = row.Cells.[2]
-    cell.AddParagraph("Punkte") |> ignore
+    cell.MergeDown <- 1
+    cell.VerticalAlignment <- VerticalAlignment.Center
+    cell.AddParagraph("Verein") |> ignore
+    let cell = row.Cells.[3]
+    cell.MergeDown <- 1
+    cell.VerticalAlignment <- VerticalAlignment.Center
+    cell.AddParagraph("Pkte") |> ignore
     [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x ->
-                                       let cell = row.Cells.[i + 3]
-                                       cell.AddParagraph(sprintf "%i. SC" x) |> ignore)
+                                       let cell = row.Cells.[i + 4]
+                                       cell.AddParagraph(sprintf "%i. Sbg.Cup" x) |> ignore)
+
+    let row = table.AddRow()
+    row.Shading.Color <- Colors.PaleGoldenrod
+    row.Cells.[0].MergeRight <- 3
+    [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x ->
+                                       let cell = row.Cells.[i + 4]
+                                       cell.AddParagraph("Pkte / Zeit (Rg)") |> ignore)
+
+
+    //table.SetEdge(0, 0, 3, 3, Edge.Box, BorderStyle.Single, new Unit(1.5), Colors.Black)
+    document.LastSection.Add(table)
+    table
+
+let addCategoryResult (table:Table) classHeader (classResult : seq<CupResult>) =
+    let blankRow= table.AddRow()
+    let cell = blankRow.Cells.[0]
+    cell.MergeRight <- Config.Cup.NumberOfEvents + 3
+    let paragraph = cell.AddParagraph()
+    let formattedText = paragraph.AddFormattedText("", TextFormat.Bold)
+    formattedText.Size <- new Unit(3.0)
+    
+    let row = table.AddRow()
+    let cell = row.Cells.[1]
+    cell.MergeRight <- Config.Cup.NumberOfEvents + 2
+    let paragraph = cell.AddParagraph()
+    let formattedText = paragraph.AddFormattedText(classHeader, TextFormat.Bold)
+    formattedText.Size <- new Unit(10.0)
+    formattedText.Color <- Colors.DarkBlue;
 
     recalcPositions classResult 
        |> Seq.iteri (fun i (rank, item) ->
@@ -144,17 +189,18 @@ let addTable (document:Document) classHeader (classResult : seq<CupResult>) =
                             let cell = row.Cells.[0]
                             cell.AddParagraph(rank.ToString()) |> ignore
                             let cell = row.Cells.[1]
-                            cell.AddParagraph(sprintf "%s\n%s" item.PersonName c) |> ignore
+                            cell.AddParagraph(item.PersonName) |> ignore
                             let cell = row.Cells.[2]
+                            cell.AddParagraph(c) |> ignore
+
+                            let cell = row.Cells.[3]
                             let para = cell.AddParagraph()
                             let txt = new FormattedText()
                             txt.AddFormattedText(totalFormated, TextFormat.Bold) |> ignore
                             para.Add(txt)
                             printDetailedResultCells item.Results row)
-        |> ignore
+       |> ignore
 
-    //table.SetEdge(0, 0, 3, 3, Edge.Box, BorderStyle.Single, new Unit(1.5), Colors.Black)
-    document.LastSection.Add(table)
 
 let buildResultPdf catResults (outputFile:string) =
     let doc = new Document()
@@ -162,6 +208,8 @@ let buildResultPdf catResults (outputFile:string) =
     
     setStyles doc |> ignore
     defineContentSection doc |> ignore
+
+    let resultTable = createTable doc
 
     let classCfg = Config.Classes |> Array.toList
     let catRes =
@@ -171,7 +219,7 @@ let buildResultPdf catResults (outputFile:string) =
             if exists then
                 let _, catResult = catResults 
                                     |> Seq.find(fun (catId, res) -> catId = cfg.Id)
-                yield addTable doc classHeader catResult ]
+                yield addCategoryResult resultTable classHeader catResult ]
     
     let renderer = PdfDocumentRenderer(true)
     renderer.Document <- doc
