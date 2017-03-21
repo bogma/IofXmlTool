@@ -9,7 +9,7 @@ open System.IO
 let buildRankingHeader i =
     let p1 = """<td class="ranking_header" valign="bottom" align="center"><div>"""
     let p2 = """</div></td>"""
-    let s = sprintf "%i. SC" i
+    let s = sprintf "%i. Sbg.Cup" i
     p1 + s + p2
 
 let printSingleDetailedResult eventResult =
@@ -67,7 +67,7 @@ let buildResultHtml classResults (outputFile:string)=
     let htmlOpen = "<html>"
     let htmlClose = "</html>"
     let head = """<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><link href="./default.css" rel="stylesheet" type="text/css" /><title>""" + Config.Cup.Name + """</title></head>"""
-    let bodyTop = """<body><h1>Rangliste</h1><br/><br/><div>Gewertet werden die <strong>""" + Config.Cup.TakeBest.ToString() + """</strong> besten Ergebnisse von <strong>""" + Config.Cup.NumberOfEvents.ToString() + """</strong>.</div><br/><br/><br/><br/>"""
+    let bodyTop = """<body><h1>Rangliste - """ + Config.Cup.Name + """</h1><br/><br/><div>Gewertet werden die <strong>""" + Config.Cup.TakeBest.ToString() + """</strong> besten Ergebnisse von <strong>""" + Config.Cup.NumberOfEvents.ToString() + """</strong>.</div><br/><br/><br/><br/>"""
     let bodyBottom = """<br/><div>(c) """ + System.DateTime.Now.Year.ToString() + """ by solv.at | Daten: ANNE / oefol.at und der veranstaltende Verein</div><br/><div>webmaster@solv.at</div><div>Erstellt: """ + System.DateTime.Now.ToString("R") + """</div></body>"""
 
     let classCfg = Config.Classes |> Array.toList
