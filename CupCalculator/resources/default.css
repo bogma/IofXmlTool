@@ -59,12 +59,12 @@ tr.cal_out_dark{
   height:45px;
 }
 
-tr.cal_out_grey{
+tr.row_style_even{
   background:#ddd;
   height:45px;
 }
 
-tr.cal_out_white{
+tr.row_style_odd{
   background:#fff;
   height:45px;
 }

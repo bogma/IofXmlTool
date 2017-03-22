@@ -28,7 +28,12 @@
     <Organisation name="HSV Wals" id="33" />
   </Organisations>
   <Output>
-    <Html fileName="cup-2016.html" css="link"></Html>
+    <Html fileName="cup-2016.html"
+          cssInline="true"
+          docTemplate="./resources/document_template.html"
+          classTemplate="./resources/class_template.html"
+          detailsTemplate="./resources/details_template.html"
+          cssFile="./resources/default.css"></Html>
     <Pdf fileName="cup-2016.pdf" orientation="Landscape" image=""></Pdf>
   </Output>
   <Names>

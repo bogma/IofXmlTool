@@ -1,0 +1,8 @@
+﻿<td fs-if="statusOk" align="center">
+    <div fs-if="resultCounts" style="overflow:hidden">{{{points}}}</div>
+    <div fs-else style="overflow:hidden;text-decoration:line-through;">{{{points}}}</div>
+    <div class="time" style="overflow:hidden">{{{time}}} ({{{pos}}})</div>
+</td>
+<td fs-else align="center">
+    <div style="overflow:hidden">{{{status}}}</div>
+</td>
