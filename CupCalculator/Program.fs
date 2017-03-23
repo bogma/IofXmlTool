@@ -148,13 +148,12 @@ let main argv =
     
         if cs.Length > 0 then
             printfn "%A" cs
-
-    let outputFile = Path.Combine(inputPath, Config.Output.Html.FileName) 
-    buildResultHtml classResults outputFile |> ignore
+ 
+    buildResultHtml classResults inputPath |> ignore
 
     let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
     buildResultPdf classResults outputFile|> ignore
 
-    System.Console.ReadLine() |> ignore
+    //System.Console.ReadLine() |> ignore
 
     0 // return an integer exit code

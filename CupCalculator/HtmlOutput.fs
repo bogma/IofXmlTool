@@ -14,7 +14,7 @@ let getRowStyle rowIndex =
     if (rowIndex % 2 = 0) then "row_style_even"
     else "row_style_odd"
 
-let printDetailedResultRow (results : seq<EventResult>) =
+let printDetailedResultRow (results : seq<EventResult>) (template:string) =
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> (Config.Cup.ResultFilePrefix) + i.ToString("D2") + "_" + (Config.Cup.Year).ToString())
     [ for r in races do
           let p = results |> Seq.filter (fun eventResult -> eventResult.EventFile = r)
@@ -28,9 +28,16 @@ let printDetailedResultRow (results : seq<EventResult>) =
                     |> add "time" (formatSeconds2Time eRes.PRR.Time)
                     |> add "pos" eRes.PRR.Position
                     |> add "status" (explode eRes.PRR.Status |> List.filter (fun x -> Char.IsUpper(x)) |> implode)
-                    |> fromFile Config.Output.Html.DetailsTemplate]
+                    |> fromFile template]
 
-let buildResultHtml classResults (outputFile:string)=
+let buildResultHtml classResults (inputPath:string) =
+
+    let cssFile = Path.Combine(inputPath, Config.Output.Html.CssFile)
+    let outputFile = Path.Combine(inputPath, Config.Output.Html.FileName)
+    let docTemplateFile = Path.Combine(inputPath, Config.Output.Html.DocTemplate)
+    let classTemplateFile = Path.Combine(inputPath, Config.Output.Html.ClassTemplate)
+    let detailsTemplateFile = Path.Combine(inputPath, Config.Output.Html.DetailsTemplate)
+
     let classCfg = Config.Classes |> Array.toList
     let catRes =
         [ for cfg in classCfg do
@@ -48,11 +55,13 @@ let buildResultHtml classResults (outputFile:string)=
                     |> add "catResults" cr
                     |> add "getRowStyle" getRowStyle
                     |> add "getClubNameById" getClubNameById
+                    |> add "format" ((getCalcStrategy Config.Cup.CalcRule).FormatPoints)
                     |> add "printDetailedResultRow" printDetailedResultRow
+                    |> add "templateFile" detailsTemplateFile
                     |> add "combineListToString" combineListToString
-                    |> fromFile Config.Output.Html.ClassTemplate]
+                    |> fromFile classTemplateFile]
 
-    let cssContent = File.ReadAllText(Config.Output.Html.CssFile)
+    let cssContent = File.ReadAllText(cssFile)
     let creationDate = System.DateTime.Now.ToString("R")
     let compiledHtml =
         init
@@ -64,10 +73,8 @@ let buildResultHtml classResults (outputFile:string)=
         |> add "year" DateTime.Now.Year
         |> add "date" creationDate
         |> add "catResult" catRes
-        |> fromFile Config.Output.Html.DocTemplate
+        |> fromFile docTemplateFile
 
     File.WriteAllText(outputFile, compiledHtml)
-
     let path = Path.GetDirectoryName(outputFile)
-    File.Copy(Config.Output.Html.CssFile, Path.Combine(path, "default.css"), true)
     printfn "HTML output written to %s" outputFile

@@ -18,9 +18,9 @@
                 <div style="overflow:hidden;">{{{item.OrganisationId |> getClubNameById}}}</div>
             </td>
             <td align="center" style="border-right:1px solid #888;">
-                <div style="overflow:hidden;font-weight:bold;">{{{item.TotalPoints}}}</div>
+                <div style="overflow:hidden;font-weight:bold;">{{{item.TotalPoints |> format}}}</div>
             </td>
-            {{{item.Results |> printDetailedResultRow |> combineListToString}}}
+            {{{printDetailedResultRow(item.Results, templateFile) |> combineListToString}}}
         </tr>
         </tbody>
     </table>
