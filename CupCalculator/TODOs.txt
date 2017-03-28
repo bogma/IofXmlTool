@@ -9,4 +9,8 @@
 //TODO: support html results
 //TODO: events - name, date for output
 //TODO: CupConfigurator 
-//TODO: support all states for runners (MP, DNS, DNF, ..), filter via config file
+//TODO: support translations for result states (MP, DNS, DNF, ..)
+//TODO: page brake in pdf output when category does not fit on page
+//TODO: table header on each page in pdf output
+//TODO: pdf template
+//TODO: document html template options
