@@ -209,7 +209,8 @@ let buildResultPdf catResults (outputFile:string) =
     setStyles doc |> ignore
     defineContentSection doc |> ignore
 
-    let resultTable = createTable doc
+    let mutable resultTable = createTable doc
+    let mutable lines = 0
 
     let classCfg = Config.Classes |> Array.toList
     let catRes =
@@ -219,6 +220,11 @@ let buildResultPdf catResults (outputFile:string) =
             if exists then
                 let _, catResult = catResults 
                                     |> Seq.find(fun (catId, res) -> catId = cfg.Id)
+                lines <- lines + 2 + (catResult |> Seq.length)
+                if lines > 37 then
+                    doc.LastSection.AddPageBreak()
+                    resultTable <- createTable doc
+                    lines <- 2 + (catResult |> Seq.length)
                 yield addCategoryResult resultTable classHeader catResult ]
     
     let renderer = PdfDocumentRenderer(true)
