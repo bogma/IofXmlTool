@@ -61,12 +61,14 @@ let buildEventResult (inputFile : string) =
                 |> Seq.map (fun pair ->
                                 let clId = fst pair
                                 let clRes = snd pair
-                                let winningTime = clRes 
+                                let validResults = clRes 
                                                     |> Seq.filter (fun x -> x.Status = "OK")
-                                                    |> Seq.map (fun x -> x.Time)
-                                                    |> Seq.min
-                                let timeGroupedRes = clRes
-                                                        |> Seq.filter (fun x -> x.Status = "OK")
+                                let winningTime = 
+                                    if (validResults |> Seq.isEmpty) then 0
+                                    else validResults
+                                            |> Seq.map (fun x -> x.Time)
+                                            |> Seq.min
+                                let timeGroupedRes = validResults
                                                         |> Seq.sortBy (fun x -> x.Time)
                                                         |> Seq.groupBy (fun x -> x.Time)
                                 let cupPositions = getPositionSeq 1 (getIntervalList timeGroupedRes)
@@ -154,6 +156,6 @@ let main argv =
     let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
     buildResultPdf classResults outputFile|> ignore
 
-    //System.Console.ReadLine() |> ignore
+    System.Console.ReadLine() |> ignore
 
     0 // return an integer exit code
