@@ -64,7 +64,8 @@ let defineContentSection (document:Document) =
 
     let footer = section.Footers.Primary  
 
-    let footerTxt = "(c) " + System.DateTime.Now.Year.ToString() + " by solv.at | Daten: ANNE / oefol.at und der veranstaltende Verein webmaster@solv.at Erstellt: " + System.DateTime.Now.ToString("R")
+    let cultureInfo = System.Globalization.CultureInfo("de-AT")
+    let footerTxt = "(c) " + System.DateTime.Now.Year.ToString() + " by SOLV | Erstellt: " + System.DateTime.Now.ToString("R", cultureInfo)
     let paragraph = footer.AddParagraph()
 
     paragraph.AddText(footerTxt) |> ignore
@@ -112,7 +113,10 @@ let createTable (document:Document) =
     let column = table.AddColumn(Unit.FromCentimeter(3.8))
     column.Format.Alignment <- ParagraphAlignment.Left
     // club
-    let column = table.AddColumn(Unit.FromCentimeter(2.5))
+    let columnWidth =
+        if Config.Output.Pdf.Orientation = "Portrait" then 4.0
+        else 2.5
+    let column = table.AddColumn(Unit.FromCentimeter(columnWidth))
     column.Format.Alignment <- ParagraphAlignment.Left
     // overall points
     let column = table.AddColumn(Unit.FromCentimeter(1.0))
@@ -211,6 +215,9 @@ let buildResultPdf catResults (outputFile:string) =
 
     let mutable resultTable = createTable doc
     let mutable lines = 0
+    let brake =
+        if Config.Output.Pdf.Orientation = "Portrait" then 59
+        else 37
 
     let classCfg = Config.Classes |> Array.toList
     let catRes =
@@ -221,7 +228,7 @@ let buildResultPdf catResults (outputFile:string) =
                 let _, catResult = catResults 
                                     |> Seq.find(fun (catId, res) -> catId = cfg.Id)
                 lines <- lines + 2 + (catResult |> Seq.length)
-                if lines > 37 then
+                if lines > brake then
                     doc.LastSection.AddPageBreak()
                     resultTable <- createTable doc
                     lines <- 2 + (catResult |> Seq.length)
