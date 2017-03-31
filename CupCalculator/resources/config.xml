@@ -34,16 +34,22 @@
     <Organisation name="HSV Wals" id="33" />
   </Organisations>
   <Output>
-    <Html fileName="cup-2016.html"
+    <Html active="true"
+          fileName="cup-2016.html"
           cssInline="true"
           docTemplate="./resources/document_template.html"
           classTemplate="./resources/class_template.html"
           detailsTemplate="./resources/details_template.html"
           cssFile="./resources/default.css"></Html>
-    <Pdf fileName="cup-2016.pdf" orientation="Landscape" image=""></Pdf>
+    <Pdf active="true" fileName="cup-2016.pdf" orientation="Landscape" image=""></Pdf>
   </Output>
   <Names>
     <Name name="Bubu" aliasFor="der Hund, the great"/>
     <Name name="Tcharly Hackl" aliasFor="Karl Hackl"/>
   </Names>
+  <Translations>
+    <Translation key="DidNotFinish" translate="aufg." />
+    <Translation key="DidNotStart" translate="n ang." />
+    <Translation key="MissingPunch" translate="Fehlst." />
+  </Translations>
 </CupConfiguration>

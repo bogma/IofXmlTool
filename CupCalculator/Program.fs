@@ -151,10 +151,12 @@ let main argv =
         if cs.Length > 0 then
             printfn "%A" cs
  
-    buildResultHtml classResults inputPath |> ignore
+    if Config.Output.Html.Active then
+        buildResultHtml classResults inputPath |> ignore
 
-    let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
-    buildResultPdf classResults outputFile|> ignore
+    if Config.Output.Pdf.Active then
+        let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
+        buildResultPdf classResults outputFile|> ignore
 
     System.Console.ReadLine() |> ignore
 
