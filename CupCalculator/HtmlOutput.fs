@@ -27,7 +27,7 @@ let printDetailedResultRow (results : seq<EventResult>) (template:string) =
                     |> add "points" ((getCalcStrategy Config.Cup.CalcRule).FormatPoints eRes.PRR.Points)
                     |> add "time" (formatSeconds2Time eRes.PRR.Time)
                     |> add "pos" eRes.PRR.Position
-                    |> add "status" (explode eRes.PRR.Status |> List.filter (fun x -> Char.IsUpper(x)) |> implode)
+                    |> add "status" (getStatusText eRes.PRR.Status)
                     |> fromFile template]
 
 let buildResultHtml classResults (inputPath:string) =
@@ -44,7 +44,7 @@ let buildResultHtml classResults (inputPath:string) =
             let exists = classResults |> Seq.exists(fun (catId, _) -> catId = cfg.Id)
             if exists then
                 let _, catResult = classResults 
-                                    |> Seq.find(fun (catId, res) -> catId = cfg.Id)            
+                                    |> Seq.find(fun (catId, res) -> catId = cfg.Id)
                 let strategy = getCalcStrategy Config.Cup.CalcRule
                 let cr = recalcPositions catResult
                 yield

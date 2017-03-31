@@ -84,11 +84,11 @@ let printSingleDetailedResult eventResult =
         formattedText.AddFormattedText(sprintf " / %s (%i)" tsString eventResult.PRR.Position) |> ignore
         formattedText
     else
-        let r = explode eventResult.PRR.Status |> List.filter (fun x -> Char.IsUpper(x)) |> implode
+        let r = getStatusText eventResult.PRR.Status
         formattedText.AddFormattedText(r) |> ignore
         formattedText
 
-let printDetailedResultCells (results:seq<EventResult>) (row:Row) =              
+let printDetailedResultCells (results:seq<EventResult>) (row:Row) =
     let races = [1..Config.Cup.NumberOfEvents] |> List.map (fun i -> Config.Cup.ResultFilePrefix + i.ToString("D2") + "_" + Config.Cup.Year.ToString())
     races |> List.iteri (fun i r ->
                              let cell = row.Cells.[i + 4]

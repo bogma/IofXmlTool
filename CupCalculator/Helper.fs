@@ -1,6 +1,8 @@
 ﻿module Helper
 
 open CupTypes
+
+open System
 open System.IO
 
 let runningTotal = List.scan (+) 0 >> List.tail
@@ -89,3 +91,11 @@ let implode (xs:char list) =
         let sb = System.Text.StringBuilder(xs.Length)
         xs |> List.iter (sb.Append >> ignore)
         sb.ToString()
+
+let getStatusText s =
+    let translations = Config.Translations
+    let t = translations |> Array.filter (fun x -> x.Key.Contains(s))
+    if (t.Length > 0) then
+        t.[0].Translate
+    else
+        explode s |> List.filter (fun x -> Char.IsUpper(x)) |> implode
