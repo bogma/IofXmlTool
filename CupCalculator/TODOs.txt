@@ -7,10 +7,12 @@
 
 //TODO: support csv results
 //TODO: support html results
+
 //TODO: events - name, date for output
 //TODO: CupConfigurator 
-//TODO: support translations for result states (MP, DNS, DNF, ..)
-//TODO: page brake in pdf output when category does not fit on page
-//TODO: table header on each page in pdf output
+
 //TODO: pdf template
 //TODO: document html template options
+
+//TODO: calc page breaks on some size metriks (now its done on empiric basis - 37 lines when Landscape, 59 lines when Portrait)
+//TODO: copy default files to output if not present (html-templates)
