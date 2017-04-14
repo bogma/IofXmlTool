@@ -10,9 +10,7 @@ open System.Runtime.InteropServices
 [<assembly: AssemblyTitle("CupCalculator")>]
 [<assembly: AssemblyDescription("")>]
 [<assembly: AssemblyConfiguration("")>]
-[<assembly: AssemblyCompany("Commend")>]
 [<assembly: AssemblyProduct("CupCalculator")>]
-[<assembly: AssemblyCopyright("Copyright © Commend 2016")>]
 [<assembly: AssemblyTrademark("")>]
 [<assembly: AssemblyCulture("")>]
 
