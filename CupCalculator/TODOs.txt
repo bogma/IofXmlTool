@@ -8,7 +8,7 @@
 //TODO: support csv results
 //TODO: support html results
 
-//TODO: events - name, date for output
+//TODO: events - name, date for output (unfortunately not available in result xml)
 //TODO: CupConfigurator 
 
 //TODO: pdf template
@@ -16,3 +16,7 @@
 
 //TODO: calc page breaks on some size metriks (now its done on empiric basis - 37 lines when Landscape, 59 lines when Portrait)
 //TODO: copy default files to output if not present (html-templates)
+
+//TODO: self defined calculation rule (runtime compiled)
+//TODO: different calulation rule for each kategory
+//TODO: include score ol in cup
