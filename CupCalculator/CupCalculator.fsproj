@@ -27,7 +27,7 @@
     </DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
-    <StartArguments>"C:/ol/events/2016/SchulCup"</StartArguments>
+    <StartArguments>"C:/ol/events/2018/SchulCup"</StartArguments>
     <Commandlineparameters>"../../../../ol/data"</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -38,8 +38,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>bin\Release\CupCalculator.XML</DocumentationFile>
-    <Prefer32Bit>true</Prefer32Bit>
+    <DocumentationFile>
+    </DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -90,6 +91,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="FSharp.Data">
+      <HintPath>..\packages\FSharp.Data.2.4.6\lib\net45\FSharp.Data.dll</HintPath>
+    </Reference>
     <Reference Include="Fue">
       <HintPath>..\packages\Fue.1.2.0\lib\net45\Fue.dll</HintPath>
     </Reference>
@@ -125,9 +129,6 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="FSharp.Core">
       <Private>True</Private>
-    </Reference>
-    <Reference Include="FSharp.Data">
-      <HintPath>..\packages\FSharp.Data.2.3.2\lib\net40\FSharp.Data.dll</HintPath>
     </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
