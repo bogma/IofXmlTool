@@ -149,7 +149,7 @@ let createTable (document:Document) =
     cell.AddParagraph("Pkte") |> ignore
     [1..Config.Cup.NumberOfEvents] |> List.iteri (fun i x ->
                                        let cell = row.Cells.[i + 4]
-                                       cell.AddParagraph(sprintf "%i. Sbg.Cup" x) |> ignore)
+                                       cell.AddParagraph(sprintf "%i. %s" x Config.Cup.EventTitle) |> ignore)
 
     let row = table.AddRow()
     row.Shading.Color <- Colors.PaleGoldenrod

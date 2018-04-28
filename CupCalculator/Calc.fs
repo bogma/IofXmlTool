@@ -24,8 +24,8 @@ let calcPointsFromTime winningTime time pos =
     if p < 0m then 0m
     else p
 
-type CalculationRule(calcFunction, format) = 
-    member this.CalcFunction with get() = calcFunction    
+type CalculationRule(calcFunction, format) =
+    member this.CalcFunction with get() = calcFunction
     member this.Execute wt rt pos = calcFunction wt rt pos
     member this.FormatPoints (points : decimal) = sprintf format points
 

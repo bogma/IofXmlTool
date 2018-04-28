@@ -5,7 +5,8 @@
        takeBest="6"
        calcRule="calcPointsFromTime"
        resultFilePrefix="SC"
-       includeStatus="DidNotFinish,MissingPunch">
+       includeStatus="DidNotFinish,MissingPunch"
+       eventTitle="Sbg.Cup">
 	<!-- set num to 0 if not needed -->
     <Event num="1" date="" name="" fileName="" />
 	  <Event num="9" multiply="2.0" />
