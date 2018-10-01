@@ -43,6 +43,7 @@
           detailsTemplate="./resources/details_template.html"
           cssFile="./resources/default.css"></Html>
     <Pdf active="true" fileName="cup-2016.pdf" orientation="Landscape" image=""></Pdf>
+    <Json active="true" fileName="cup-2016.json"></Json>
   </Output>
   <Names>
     <Name name="Bubu" aliasFor="der Hund, the great"/>

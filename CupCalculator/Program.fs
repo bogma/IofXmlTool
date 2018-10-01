@@ -9,6 +9,7 @@ open Parsing
 open HtmlOutput
 open PdfOutput
 open FSharp.Data
+open Newtonsoft.Json
 
 let flatten x =
     [for event, c in x do
@@ -157,6 +158,11 @@ let main argv =
     if Config.Output.Pdf.Active then
         let outputFile = Path.Combine(inputPath, Config.Output.Pdf.FileName)   
         buildResultPdf classResults outputFile|> ignore
+
+    if Config.Output.Json.Active then
+        let outputFile = Path.Combine(inputPath, Config.Output.Json.FileName)
+        let json = JsonConvert.SerializeObject(results)
+        File.WriteAllText(outputFile, json)
 
     System.Console.ReadLine() |> ignore
 
