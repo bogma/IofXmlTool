@@ -1,5 +1,6 @@
 ﻿open System
 open System.IO
+open System.Text
 open System.Xml
 open System.Xml.Linq
 open CupTypes
@@ -162,7 +163,9 @@ let main argv =
     if Config.Output.Json.Active then
         let outputFile = Path.Combine(inputPath, Config.Output.Json.FileName)
         let json = JsonConvert.SerializeObject(results)
-        File.WriteAllText(outputFile, json)
+        File.WriteAllText(outputFile, json, Encoding.UTF8)
+        printfn "JSON output written to %s" outputFile
+
 
     System.Console.ReadLine() |> ignore
 
