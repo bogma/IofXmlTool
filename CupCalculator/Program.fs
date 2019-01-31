@@ -104,7 +104,7 @@ let main argv =
     classCfgIds := Config.Classes |> Array.toList |> List.map (fun x -> x.Id)
     orgCfgIds := Config.Organisations  |> Array.toList |> List.map (fun x -> x.Id)
 
-    let competitions = getFiles inputPath "*_*.xml" false
+    let competitions = getFiles inputPath ((Config.Cup.ResultFilePrefix) + "*_*.xml") false
 
     let results =
         competitions
