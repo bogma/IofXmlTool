@@ -104,7 +104,12 @@ let main argv =
     classCfgIds := Config.Classes |> Array.toList |> List.map (fun x -> x.Id)
     orgCfgIds := Config.Organisations  |> Array.toList |> List.map (fun x -> x.Id)
 
-    let competitions = getFiles inputPath ((Config.Cup.ResultFilePrefix) + "*_*.xml") false
+    let competitions = getFiles inputPath ((Config.Cup.ResultFilePrefix) + "*_*.xml") Config.Cup.RecurseSubDirs
+
+    if Config.Cup.ConvertToJson then
+        ////competitions |> Seq.toList |> printf "%A"
+        ////competitions |> Seq.iter(fun x -> Path.GetDirectoryName(x) |> printf "%s")
+        competitions |> Seq.iter toJson |> ignore
 
     let results =
         competitions

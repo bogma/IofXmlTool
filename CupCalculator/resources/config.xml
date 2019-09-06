@@ -5,6 +5,8 @@
        takeBest="6"
        calcRule="calcPointsFromTime"
        resultFilePrefix="SC"
+       recurseSubDirs="false"
+       convertToJson="false"
        includeStatus="DidNotFinish,MissingPunch"
        eventTitle="Sbg.Cup">
 	<!-- set num to 0 if not needed -->

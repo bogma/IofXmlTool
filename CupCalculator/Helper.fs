@@ -31,6 +31,13 @@ let rec getFiles dir pattern subdirs =
               for d in Directory.EnumerateDirectories(dir) do
                   yield! getFiles d pattern subdirs }
 
+let toJson (inputFile : string) =    
+    //let fileName = Path.GetFileNameWithoutExtension(inputFile)
+    let outputFile = Path.ChangeExtension(inputFile, "json")
+//    let json = JsonConvert.SerializeObject(results)
+//    File.WriteAllText(outputFile, json, Encoding.UTF8)
+    printfn "JSON output written to %s" outputFile
+
 // build all combinations of lenght n from list l
 let rec comb n l = 
     match n, l with

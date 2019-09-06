@@ -27,7 +27,7 @@
     </DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
     <Externalconsole>true</Externalconsole>
-    <StartArguments>"C:/ol/events/2018/SbgCup"</StartArguments>
+    <StartArguments>"../../../../solv_website/content/event/2020" "config_sbgcup.xml"</StartArguments>
     <Commandlineparameters>"../../../../ol/data"</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
