@@ -32,6 +32,14 @@ let rec getFiles dir pattern subdirs =
                   yield! getFiles d pattern subdirs }
 
 let toJson (inputFile : string) =    
+
+    let isNewer file1 file2 =
+
+        let fi1 = FileInfo(file1)
+        let fi2 = FileInfo(file2)
+        fi1.LastWriteTime > fi2.LastWriteTime
+
+    let xmlFile = FileInfo(inputFile)
     //let fileName = Path.GetFileNameWithoutExtension(inputFile)
     let outputFile = Path.ChangeExtension(inputFile, "json")
 //    let json = JsonConvert.SerializeObject(results)
