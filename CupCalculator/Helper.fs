@@ -4,6 +4,9 @@ open CupTypes
 
 open System
 open System.IO
+open System.Xml.Linq
+open FSharp.Data
+open System.Xml
 
 let runningTotal = List.scan (+) 0 >> List.tail
 
@@ -31,20 +34,67 @@ let rec getFiles dir pattern subdirs =
               for d in Directory.EnumerateDirectories(dir) do
                   yield! getFiles d pattern subdirs }
 
+
+let rec fromXml (xml:XElement) =
+
+  // Create a collection of key/value pairs for all attributes
+  let attrs (xele:XElement) = 
+    [ for attr in xele.Attributes() ->
+        ("-" + attr.Name.LocalName, JsonValue.String attr.Value) ]
+
+  // Function that turns a collection of XElement values
+  // into an array of JsonValue (using fromXml recursively)
+  let createArray xelems =
+    [| for xelem in xelems -> fromXml xelem |]
+    |> JsonValue.Array
+
+  // Group child elements by their name and then turn all single-
+  // element groups into a record (recursively) and all multi-
+  // element groups into a JSON array using createArray
+  let children =
+    xml.Elements() 
+    |> Seq.groupBy (fun x -> x.Name.LocalName)
+    |> Seq.map (fun (key, childs) ->
+        match Seq.toList childs with
+        | [child] when child.HasElements -> key, fromXml child
+        | [child] when not(child.HasElements) && not(child.HasAttributes) -> key, JsonValue.String child.Value
+        | [child] when not(child.HasElements) && child.HasAttributes -> 
+            let a = attrs child
+            key, List.append a [("#text", JsonValue.String child.Value)] |> Array.ofList |> JsonValue.Record
+        | children -> key + "s", createArray children )
+
+  // Concatenate elements produced for child elements & attributes
+  let attrList = attrs xml
+  Array.append (Array.ofList attrList) (Array.ofSeq children)
+    |> JsonValue.Record
+  
 let toJson (inputFile : string) =    
 
     let isNewer file1 file2 =
+        if not(File.Exists(file1)) then
+            false
+        elif not(File.Exists(file2)) then
+            true
+        else
+            let fi1 = FileInfo(file1)
+            let fi2 = FileInfo(file2)
+            fi1.LastWriteTime > fi2.LastWriteTime
+    let getDoc x =
+        let doc = XDocument.Parse(x)
+        doc
 
-        let fi1 = FileInfo(file1)
-        let fi2 = FileInfo(file2)
-        fi1.LastWriteTime > fi2.LastWriteTime
-
-    let xmlFile = FileInfo(inputFile)
-    //let fileName = Path.GetFileNameWithoutExtension(inputFile)
     let outputFile = Path.ChangeExtension(inputFile, "json")
+    if (isNewer inputFile outputFile) then
+        let content = File.ReadAllText(inputFile, System.Text.Encoding.UTF7)
+        let doc = XDocument.Parse(content)
+        let json = fromXml doc.Root
+        printfn "write JSON %s" outputFile
+        File.WriteAllText(outputFile, json.ToString(), System.Text.Encoding.UTF8)
+    else
+        printfn "no need to write JSON %s" outputFile
+    //let fileName = Path.GetFileNameWithoutExtension(inputFile)
 //    let json = JsonConvert.SerializeObject(results)
 //    File.WriteAllText(outputFile, json, Encoding.UTF8)
-    printfn "JSON output written to %s" outputFile
 
 // build all combinations of lenght n from list l
 let rec comb n l = 
