@@ -16,7 +16,7 @@ let getTime (result : XmlResult.Result) =
         | _ -> 0
 
 let parseResultXml (uri : string) : list<ParsedResult>=
-    let content = File.ReadAllText(uri, System.Text.Encoding.UTF7)
+    let content = File.ReadAllText(uri, System.Text.Encoding.UTF8)
     let info = XmlResult.Parse(content)
     printfn "parsing %s" uri
     [for classRes in info.ClassResults do

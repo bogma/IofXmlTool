@@ -7,6 +7,7 @@ open System.IO
 open System.Xml.Linq
 open FSharp.Data
 open System.Xml
+open System.Text
 
 let runningTotal = List.scan (+) 0 >> List.tail
 
@@ -61,14 +62,16 @@ let rec fromXml (xml:XElement) =
         | [child] when not(child.HasElements) && child.HasAttributes -> 
             let a = attrs child
             key, List.append a [("#text", JsonValue.String child.Value)] |> Array.ofList |> JsonValue.Record
-        | children -> key + "s", createArray children )
+        | children -> key, createArray children )
 
   // Concatenate elements produced for child elements & attributes
   let attrList = attrs xml
-  Array.append (Array.ofList attrList) (Array.ofSeq children)
-    |> JsonValue.Record
+  if (xml.Parent = null) then
+    Array.append (Array.ofList attrList) [|(xml.Name.LocalName, (Array.ofSeq children |> JsonValue.Record))|] |> JsonValue.Record
+  else
+    Array.append (Array.ofList attrList) (Array.ofSeq children) |> JsonValue.Record
   
-let toJson (inputFile : string) =    
+let toJson (inputFile : string) =
 
     let isNewer file1 file2 =
         if not(File.Exists(file1)) then
@@ -79,17 +82,15 @@ let toJson (inputFile : string) =
             let fi1 = FileInfo(file1)
             let fi2 = FileInfo(file2)
             fi1.LastWriteTime > fi2.LastWriteTime
-    let getDoc x =
-        let doc = XDocument.Parse(x)
-        doc
 
     let outputFile = Path.ChangeExtension(inputFile, "json")
     if (isNewer inputFile outputFile) then
-        let content = File.ReadAllText(inputFile, System.Text.Encoding.UTF7)
+        let content = File.ReadAllText(inputFile, System.Text.Encoding.UTF8)
         let doc = XDocument.Parse(content)
         let json = fromXml doc.Root
         printfn "write JSON %s" outputFile
-        File.WriteAllText(outputFile, json.ToString(), System.Text.Encoding.UTF8)
+        let enc = new UTF8Encoding(false);
+        File.WriteAllText(outputFile, json.ToString(), enc)
     else
         printfn "no need to write JSON %s" outputFile
     //let fileName = Path.GetFileNameWithoutExtension(inputFile)
