@@ -4,6 +4,7 @@ open CupTypes
 
 open System
 open System.IO
+open System.Text
 open System.Xml.Linq
 open FSharp.Data
 open System.Xml
@@ -29,12 +30,17 @@ let flattenSeqOfSeq outer =
              for s in inner do
                 yield s }
 
+let detectEncoding (file:string) =
+    let reader = new StreamReader(file, Encoding.Default, true)
+    if reader.Peek() > 0 then
+        reader.Read() |> ignore
+    reader.CurrentEncoding
+
 let rec getFiles dir pattern subdirs =
     seq { yield! Directory.EnumerateFiles(dir, pattern)
           if subdirs then
               for d in Directory.EnumerateDirectories(dir) do
                   yield! getFiles d pattern subdirs }
-
 
 let rec fromXml (xml:XElement) =
 
@@ -84,6 +90,7 @@ let toJson (inputFile : string) =
             fi1.LastWriteTime > fi2.LastWriteTime
 
     let outputFile = Path.ChangeExtension(inputFile, "json")
+
     if (isNewer inputFile outputFile) then
         let content = File.ReadAllText(inputFile, System.Text.Encoding.UTF8)
         let doc = XDocument.Parse(content)
@@ -93,9 +100,6 @@ let toJson (inputFile : string) =
         File.WriteAllText(outputFile, json.ToString(), enc)
     else
         printfn "no need to write JSON %s" outputFile
-    //let fileName = Path.GetFileNameWithoutExtension(inputFile)
-//    let json = JsonConvert.SerializeObject(results)
-//    File.WriteAllText(outputFile, json, Encoding.UTF8)
 
 // build all combinations of lenght n from list l
 let rec comb n l = 
