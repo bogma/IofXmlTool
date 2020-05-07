@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CalculationRules>
+  <Rule Name="test" Formatting="%.3f">
+    let testRule _ _ _ = 0m
+  </Rule>
+  <Rule Name="participate" Formatting="%.0f">
+    let participateCount _ _ _ = 1m
+  </Rule>
+  <Rule Name="sbgcup" Formatting="%.0f">
+    let sbgcupRule _ _ pos =
+        match pos with
+        | 1 -> 25m
+        | 2 -> 20m
+        | 3 -> 16m
+        | 4 -> 13m
+        | 5 -> 11m
+        | 6 -> 10m
+        | 7 -> 9m
+        | 8 -> 8m
+        | 9 -> 7m
+        | 10 -> 6m
+        | 11 -> 5m
+        | 12 -> 4m
+        | 13 -> 3m
+        | 14 -> 2m
+        | 15 -> 1m
+        | _ -> 0m
+  </Rule>
+  <Rule Name="kolvcup" Formatting="%.0f">
+    let kolvcupRule _ _ pos =
+        match pos with
+        | 1 -> 25m
+        | 2 -> 20m
+        | 3 -> 15m
+        | 4 -> 12m
+        | 5 -> 11m
+        | 6 -> 10m
+        | 7 -> 9m
+        | 8 -> 8m
+        | 9 -> 7m
+        | 10 -> 6m
+        | 11 -> 5m
+        | 12 -> 4m
+        | 13 -> 3m
+        | 14 -> 2m
+        | 15 -> 1m
+        | _ -> 0m
+  </Rule>
+  <Rule Name="tifolcup" Formatting="%.2f">
+    let tifolcupRule winningTime time _ =
+        (winningTime / time) * (winningTime / time) * 100m
+  </Rule>
+  <Rule Name="austriacup" Formatting="%.2f">
+    let calcPointsFromTime winningTime time _ =
+        let p = 100m - (((time - winningTime) / winningTime) * 50m)
+        if p &lt; 0m then 0m
+        else p
+  </Rule>
+</CalculationRules>

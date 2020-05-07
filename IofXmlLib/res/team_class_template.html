@@ -1,0 +1,31 @@
+﻿<div>
+    <div class="category_title">{{{classFullName}}} ({{{classShortName}}})</div>
+    <br />
+    <table border="0" cellpadding="2" cellspacing="0" width="90%"> 
+        <tbody>
+            <tr>
+                <td class="ranking_header" valign="bottom" align="right" width="5%">Pl</td>
+                <td class="ranking_header" valign="bottom" width="12%">Schule</td>
+                <td class="ranking_header" valign="bottom" align="right" style="padding-right:10px;border-right:1px solid #888;">Zeit</td>
+                <td class="ranking_header" valign="bottom" align="center" colspan="3">Team</td>
+            </tr>
+            <tr fs-for="rank,trItem in catResults" class="{{{$iteration |> getRowStyle}}}">
+                <td align="right">
+                    <div style="overflow:hidden;">{{{rank}}}</div>
+                </td>
+                <td>
+                    <div style="overflow:hidden;">{{{trItem.OrganisationId |> getOrgNameById}}}</div>
+                </td>
+                <td align="right" style="padding-right:10px;border-right:1px solid #888;">
+                    <div style="overflow:hidden;">{{{trItem.TotalTime |> formatTime}}}</div>
+                </td>
+                <td fs-for="tm in trItem.TeamMembers" align="center">
+                    <b>{{{tm.Name}}}</b> ({{{tm.Time |> formatTime}}})<br />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+    <br />
+    <br />
+</div>

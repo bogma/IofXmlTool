@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="calculation_rules.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="datastandard_IOF_30.xsd" />
+    <Content Include="res\config.xml" />
+    <Content Include="res\default.css" />
+    <Content Include="res\ResultListSampleData.html" />
+    <EmbeddedResource Include="res\ResultListSampleData.xml" />
+    <EmbeddedResource Include="res\team_class_template.html" />
+    <Resource Include="res\team_document_template.html" />
+    <None Include="res\ResultListSampleData.csv" />
+    <Compile Include="Types.fs" />
+    <Compile Include="CalcLibBuilder.fs" />
+    <Compile Include="Helper.fs" />
+    <Compile Include="Parsing.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Compiler.Service" Version="35.0.0" />
+    <PackageReference Include="FSharp.Data" Version="3.3.3" />
+    <PackageReference Include="FSharp.Json" Version="0.4.0" />
+    <PackageReference Include="Fue" Version="1.7.0" />
+    <PackageReference Update="FSharp.Core" Version="4.7.1" />
+  </ItemGroup>
+
+</Project>

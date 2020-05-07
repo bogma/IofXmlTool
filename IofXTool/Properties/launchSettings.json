@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ResultHelper": {
+      "commandName": "Project",
+      "commandLineArgs": " build -p \"C:/ol/events/2019/SchulCup\" -c \"config_schcup_new.xml\""
+    }
+  }
+}

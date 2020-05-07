@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Authors>bogma</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="calc_rules.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="res\config.xml" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Commands.fs" />
+    <Compile Include="Types.fs" />
+    <Compile Include="Helper.fs" />
+    <Compile Include="HtmlOutput.fs" />
+    <Compile Include="BuildHandler.fs" />
+    <Compile Include="CommandHandlers.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Argu" Version="6.0.0" />
+    <PackageReference Include="FSharp.Json" Version="0.4.0" />
+    <PackageReference Include="Fue" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CalcLib\CalcLib.fsproj" />
+    <ProjectReference Include="..\IofXmlLib\IofXmlLib.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.7.1" />
+  </ItemGroup>
+
+</Project>

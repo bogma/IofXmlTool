@@ -40,18 +40,14 @@ h1{
   margin-top:0px;
 }
 
-rder:1px solid #176795;
-  font-family:Tahoma,Verdana,Arial,sans-serif;
-  font-size:10px;
-  padding-left:3px;
-  padding-top:2px;
-}
+
 td.whitetext{
   color:#fff;
 }
 
 td.ranking_header{
-  border-bottom:1px solid #444;
+  border-bottom:1px solid #888;
+  vertical-align:bottom;
 }
 
 tr.cal_out_dark{
