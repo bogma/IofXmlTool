@@ -3,6 +3,7 @@
 open System.Xml.Linq
 open System.Text
 open FSharp.Data
+open System
 
 module Helper =
 
@@ -69,14 +70,31 @@ module Helper =
                     )
         distArray.[strOne.Length, strTwo.Length]
 
+    let sprintfTime (fmt:string) trimOptions time =
+        
+        let fmtTime = 
+            if fmt.Contains("mmm") then
+                "not implemented"
+            else
+                TimeSpan.FromSeconds(time).ToString(fmt)
+
+        match trimOptions with
+        | Start -> fmtTime.TrimStart(' ',':','0')
+        | End -> fmtTime.TrimEnd('.', '0')
+        | Both -> fmtTime.TrimStart(' ',':','0').TrimEnd('.')
+            
+
     let formatSeconds2Time time =
-        let t1 = float time
-        let ts = System.TimeSpan.FromSeconds(t1)
+        let f = floor time
+        let r = time - f
+        let ts = System.TimeSpan.FromSeconds(f)
         let h = 
             if ts.Hours > 0 then ts.Hours.ToString() + ":"
             else ""
-        h + ts.ToString(@"mm\:ss")
-
+        if r = 0.0 then
+            h + ts.ToString(@"mm\:ss")
+        else
+            h + ts.ToString(@"mm\:ss") + sprintf "%.1f" r
 
     let recalcTeamPositions (teamResult : seq<MyTeamResult>) = 
         let totalGrouped = teamResult
@@ -95,6 +113,17 @@ module Helper =
         let totalPositions = getPositionSeq 1 (getIntervalList totalGrouped)
 
         (totalPositions, totalGrouped) 
+                       ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> i1, item))
+                       |> flattenSeqOfSeq
+
+    let recalcSumPositions (classResult : seq<SumResult>) = 
+        let totalGrouped = classResult
+                            |> Seq.filter (fun x -> not (x.Disq))
+                            |> Seq.sortBy (fun cupResult -> cupResult.TotalTime)
+                            |> Seq.groupBy (fun cupResult -> cupResult.TotalTime)
+        let totalPositions = getPositionSeq 1 (getIntervalList totalGrouped)
+
+        (totalPositions, totalGrouped)
                        ||> Seq.map2 (fun i1 i2 -> snd i2 |> Seq.map (fun item -> i1, item))
                        |> flattenSeqOfSeq
 

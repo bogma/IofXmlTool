@@ -1,0 +1,31 @@
+﻿<div>
+    <div fs-if="hasShortName" class="category_title">{{{classFullName}}} ({{{classShortName}}})</div>
+    <div fs-else class="category_title">{{{classFullName}}}</div>
+    <br />
+    <table border="0" cellpadding="2" cellspacing="0" width="90%">
+        <tbody>
+        <tr>
+            <td class="ranking_header" valign="bottom" align="right" width="5%">Pl</td>
+            <td class="ranking_header" valign="bottom" width="12%">Name<br />Verein</td>
+            <td class="ranking_header" valign="bottom" align="center" width="8%"style="border-right:1px solid #888;">Punkte</td>
+            <td fs-for="i in events" class="ranking_header" valign="bottom" align="center"><div>{{{i}}}. Sbg.Cup</div></td>
+        </tr>
+        <tr fs-for="rank,item in catResults" class="{{{$iteration |> getRowStyle}}}">
+            <td align="right">
+                <div style="overflow:hidden;">{{{rank}}}</div>
+            </td>
+            <td>
+                <div style="overflow:hidden;"><b>{{{item.PersonName}}}</b></div>
+                <div style="overflow:hidden;">{{{item.OrganisationId |> getClubNameById}}}</div>
+            </td>
+            <td align="center" style="border-right:1px solid #888;">
+                <div style="overflow:hidden;font-weight:bold;">{{{item.TotalPoints |> format}}}</div>
+            </td>
+            {{{printDetailedResultRow(item.Results, templateFile) |> combineListToString}}}
+        </tr>
+        </tbody>
+    </table>
+    <br />
+    <br />
+    <br />
+</div>

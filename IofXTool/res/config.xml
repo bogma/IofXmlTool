@@ -1,6 +1,6 @@
-<Configuration>
-  <General type="Cup"
-           name="Sportvogl Cup 2016"
+<!-- supported types: Team, Cup -->
+<Configuration type="Cup">
+  <General name="Sportvogl Cup 2016"
            year="2016"
            numberOfEvents="9"
            takeBest="6"
@@ -10,11 +10,13 @@
            convertToJson="false"
            includeStatus="DidNotFinish,MissingPunch"
            eventTitle="Sbg.Cup">
-    <!-- set num to 0 if not needed -->
-    <Event num="1" date="" name="" fileName="" />
-    <Event num="9" multiply="2.0" />
-    <Event num="11" multiply="3.0" />
   </General>
+  <Events>
+    <!-- set num to 0 if not needed -->
+    <Event num="1" date="" name="" fileName=""/>
+    <Event num="9" multiply="2.0" calcRule="participate" />
+    <Event num="11" multiply="3.0" />
+  </Events>
   <Classes filter="include">
     <!-- filter = include ... includes all Classes listed
          filter = exclude ... excludes all Classes listed
@@ -49,7 +51,14 @@
           classTemplate="./resources/class_template.html"
           detailsTemplate="./resources/details_template.html"
           cssFile="./resources/default.css"></Html>
-    <Pdf active="true" fileName="cup-2016.pdf" orientation="Landscape" image=""></Pdf>
+    <Pdf active="true"
+         fileName="cup-2016.pdf"
+         pageOrientation="Landscape"
+         pageSize="A4"
+         marginLeft="10"
+         marginTop="20"
+         marginRight="10"
+         marginBottom="20"></Pdf>
     <Json active="true" fileName="cup-2016.json"></Json>
   </Output>
   <Names>

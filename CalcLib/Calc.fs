@@ -6,7 +6,7 @@ module Calc =
         member this.Execute wt rt pos = calcFunction wt rt pos
         member this.FormatPoints (points : decimal) = sprintf format points
 
-    let calcPointsFromPosition winningTime time pos =
+    let calcPointsFromPosition _ _ pos =
         match pos with
         | 1 -> 25m
         | 2 -> 20m
@@ -25,16 +25,18 @@ module Calc =
         | 15 -> 1m
         | _ -> 0m
     
-    let calcPointsFromTime winningTime time pos =
+    let calcPointsFromTime winningTime time _ =
         let p = 100m - (((time - winningTime) / winningTime) * 50m)
         if p < 0m then 0m
         else p
 
+    let sum _ time _ =
+        time
     let getCalcStrategy calcRule =
         match calcRule with
-            | "calcPointsFromTime" -> CalculationRule(calcPointsFromTime, "%.2f")
-            | "calcPointsFromPosition" -> CalculationRule(calcPointsFromPosition, "%.0f")
-            | _ -> CalculationRule(calcPointsFromTime, "%.2f")
+            | "time" -> CalculationRule(calcPointsFromTime, "%.2f")
+            | "position" -> CalculationRule(calcPointsFromPosition, "%.0f")
+            | _ -> CalculationRule(sum, "%.2f")
     
 
 

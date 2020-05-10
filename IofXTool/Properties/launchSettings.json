@@ -2,7 +2,7 @@
   "profiles": {
     "ResultHelper": {
       "commandName": "Project",
-      "commandLineArgs": " build -p \"C:/ol/events/2019/SchulCup\" -c \"config_schcup_new.xml\""
+      "commandLineArgs": "build --working-directory \"C:\\OL\\events\\2019\\SchulCup\" --config-file \"config_schcup_sum.xml\""
     }
   }
 }

@@ -1,24 +1,25 @@
 ﻿namespace IofXmlLib
 
-module Transforms =
-
+module CustomConverter =
     open FSharp.Data
-    open FSharp.Json
-
+    open Newtonsoft.Json
     type private XmlResult = XmlProvider<Schema="./datastandard_IOF_30.xsd", EmbeddedResource="IofXmlLib, IofXmlLib.datastandard_IOF_30.xsd">
+    type XmlResultIdConverter() =
+        inherit JsonConverter()
 
-    /// Implementation of [ITypeTransform] converting DateTime into int64 as epoch time.
-    type XmlResultId() =
-        interface ITypeTransform with
-            member x.targetType () = (fun _ -> typeof<string>) ()
-            member x.toTargetType value = (fun (v:obj) -> ((v :?> XmlResult.Id).Value :> obj)) value
-            member x.fromTargetType value = (fun (v:obj) -> XmlResult.Id(None, string v) :> obj) value
+            override __.CanConvert(t) = t.GetType() = typedefof<XmlResult.Id>
 
+            override __.WriteJson(writer, v, serializer) =
+                let value = (v :?> XmlResult.Id).Value
+                serializer.Serialize(writer, value)
+
+            override __.ReadJson(reader, t, existingValue, serializer) =
+                XmlResult.Id(None, "dummy") :> obj
 
 module Types =
 
     open FSharp.Data
-    open FSharp.Json
+    open Newtonsoft.Json
 
     type XmlRules = XmlProvider<"calculation_rules.xml", EmbeddedResource="IofXmlLib, IofXmlLib.calculation_rules.xml">
     type XmlResult = XmlProvider<Schema="./datastandard_IOF_30.xsd", EmbeddedResource="IofXmlLib, IofXmlLib.datastandard_IOF_30.xsd">
@@ -32,18 +33,19 @@ module Types =
         GivenName : string
         FamilyName : string
         Position : int
-        Time : int
+        Time : float
+        TimeBehind : float
         Status : string
     }
 
     type SimplePersonalRaceResult = {
         Name : string
-        Time : int
+        Time : float
     }
 
     type MyTeamResult = {
         OrganisationId : XmlResult.Id
-        TotalTime : int
+        TotalTime : float
         TeamMembers : SimplePersonalRaceResult list
     }
 
@@ -61,27 +63,48 @@ module Types =
     }
 
     type PersonalRaceResult = {
-        OrganisationId : XmlResult.Id;
-        Name : string;
-        Points : decimal;
-        Time : int;
+        [<JsonConverter(typeof<CustomConverter.XmlResultIdConverter>)>]
+        OrganisationId : XmlResult.Id
+        Name : string
+        Points : decimal
+        Time : float
+        TimeBehind : float
         Position : int
         Status : string
     }
     
     type EventResult = {
-        EventFile : string;
-        ClassId : XmlResult.Id;
-        PRR : PersonalRaceResult;
+        EventFile : string
+        [<JsonConverter(typeof<CustomConverter.XmlResultIdConverter>)>]
+        ClassId : XmlResult.Id
+        PRR : PersonalRaceResult
         ResultCounts : bool
     }
     
     type CupResult = {
         PersonName : string;
-        [<JsonField(Transform=typeof<Transforms.XmlResultId>)>]
-        ClassId : XmlResult.Id;
-        OrganisationId : XmlResult.Id;
-        TotalPoints : decimal;
+        [<JsonConverter(typeof<CustomConverter.XmlResultIdConverter>)>]
+        ClassId : XmlResult.Id
+        [<JsonConverter(typeof<CustomConverter.XmlResultIdConverter>)>]
+        OrganisationId : XmlResult.Id
+        TotalPoints : decimal
         Results : seq<EventResult>
     }
+
+    type SumResult = {
+        PersonName : string
+        [<JsonConverter(typeof<CustomConverter.XmlResultIdConverter>)>]
+        ClassId : XmlResult.Id
+        [<JsonConverter(typeof<CustomConverter.XmlResultIdConverter>)>]
+        OrganisationId : XmlResult.Id
+        TotalTime : float
+        Disq : bool
+        TimeBehind : float
+        Results : seq<EventResult>
+    }
+
+    type TrimOptions = 
+        | Start
+        | End
+        | Both
 

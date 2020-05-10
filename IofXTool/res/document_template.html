@@ -1,0 +1,25 @@
+﻿<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style fs-if="inline">{{{cssContent}}}</style><link fs-else href="./default.css" rel="stylesheet" type="text/css" />
+    <title>{{{title}}}</title>
+</head>
+
+<body>
+    <h1>Rangliste - {{{title}}}</h1>
+    <br />
+    <br />
+    <div>Gewertet werden die <strong>{{{takeBest}}}</strong> besten Ergebnisse von <strong>{{{numberOfEvents}}}</strong>.</div>
+    <br />
+    <br />
+    <br />
+    <br />
+    <div fs-for="cat in catResult">{{{cat}}}</div>
+    <br />
+    <div>(c) {{{year}}} by solv.at | Daten: ANNE / oefol.at und der veranstaltende Verein</div><br />
+    <div>webmaster@solv.at</div>
+    <div>Erstellt: {{{date}}}</div>
+</body>
+
+</html>

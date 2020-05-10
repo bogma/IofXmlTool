@@ -12,8 +12,13 @@ module Parsing =
 
     let getTime (result : XmlResult.Result) =
         match result.Status with
-        | "OK" -> result.Time |> Option.defaultValue 0.0 |> int
-        | _ -> 0
+        | "OK" -> result.Time |> Option.defaultValue 0.0
+        | _ -> 0.0
+
+    let getTimeBehind (result : XmlResult.Result) =
+        match result.Status with
+        | "OK" -> result.TimeBehind |> Option.defaultValue 0.0
+        | _ -> 0.0
 
     let parseResultXml (uri : string) : list<ParsedResult>=
         let content = File.ReadAllText(uri, System.Text.Encoding.UTF7)
@@ -38,6 +43,7 @@ module Parsing =
                             FamilyName = pr.Person.Name.Family;
                             Position = getPosition r;
                             Time = getTime r;
+                            TimeBehind = getTimeBehind r;
                             Status = r.Status
                         }
                         | None -> ()

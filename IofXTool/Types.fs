@@ -8,6 +8,7 @@ type XmlConfig = XmlProvider<"res/config.xml">
 type ResultType =
     | TeamResult of (XmlResult.Id * MyTeamResult list) seq
     | CupResult of CupResult seq
+    | SumResult of SumResult seq
 
 type ResultData = {
         InputPath : string

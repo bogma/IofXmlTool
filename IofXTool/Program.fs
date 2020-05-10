@@ -4,6 +4,7 @@ open Argu
 open Commands
 open BuildHandler
 open CommandHandlers
+open System.IO
 
 let toolVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
@@ -36,8 +37,6 @@ let processCommand cArgs subCmd subArgs =
     processWithValidation cArgs (fun _ -> true) subCmd subArgs
 
 
-
-
 let handleCommand cArgs command =
     match command with
     | New a -> processCommand cArgs newProject a
@@ -47,12 +46,12 @@ let handleCommand cArgs command =
     | Rules a -> processCommand cArgs rules a
     // global options; list here in order to maintain compiler warnings
     // in case of new subcommands added
-    | Verbose
-    | Silent
+    ////| Verbose
+    ////| Silent
     | Version
     | Working_Directory _ -> failwithf "internal error: this code should never be reached."
     | Config_File _ -> failwithf "internal error: this code should never be reached."
-    | Log_File _ -> failwithf "internal error: this code should never be reached."
+    ////| Log_File _ -> failwithf "internal error: this code should never be reached."
 
 [<EntryPoint>]
 let main argv =
@@ -67,9 +66,9 @@ let main argv =
                                 raiseOnUsage = true)
 
         let commonArgs = {
-            wDir = args.GetResult (Working_Directory, defaultValue = ".");
+            wDir = args.GetResult (Working_Directory, defaultValue = Directory.GetCurrentDirectory());
             cfgFile = args.GetResult (Config_File, defaultValue = "config.xml");
-            silent = args.Contains <@ Silent @>
+            silent = false ////args.Contains <@ Silent @>
         }
         
         traceVersion commonArgs.silent

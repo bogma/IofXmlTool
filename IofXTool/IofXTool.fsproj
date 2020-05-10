@@ -10,6 +10,14 @@
     <Content Include="calc_rules.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="res\sum_class_template.html" />
+    <Content Include="res\sum_details_template.html" />
+    <Content Include="res\class_template.html" />
+    <Content Include="res\details_template.html" />
+    <Content Include="res\document_template.html" />
+    <Content Include="res\default.css" />
+    <EmbeddedResource Include="res\team_class_template.html" />
+    <Resource Include="res\team_document_template.html" />
     <Content Include="res\config.xml" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
@@ -23,12 +31,17 @@
 
   <ItemGroup>
     <PackageReference Include="Argu" Version="6.0.0" />
-    <PackageReference Include="FSharp.Json" Version="0.4.0" />
     <PackageReference Include="Fue" Version="1.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Select.HtmlToPdf.NetCore" Version="20.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CalcLib\CalcLib.fsproj" />
+    <ProjectReference Include="..\CalcLib\CalcLib.fsproj">
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
     <ProjectReference Include="..\IofXmlLib\IofXmlLib.fsproj" />
   </ItemGroup>
 
