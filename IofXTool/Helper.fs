@@ -5,6 +5,7 @@ open IofXmlLib.Helper
 open Types
 open System.IO
 open System.Reflection
+open System.Text.RegularExpressions
 
 let levenshteinCheck (data:ResultData) =
 
@@ -73,3 +74,30 @@ let tryLocateFile (wDir:string) (f:string) =
             else
                 None
 
+let getEventInfos (config:XmlConfig.Configuration) dir =
+    let races = [1..config.General.NumberOfEvents]
+    let matchingFiles = getFiles dir config.General.ResultFileRegex "*.xml" config.General.RecurseSubDirs
+    let matchingEvents = matchingFiles |> Seq.choose (fun x -> match x with
+                                                               | Regex config.General.ResultFileRegex [evNum] -> Some (int evNum, x)
+                                                               | _ -> None)
+    ////printfn "%A" matchingEvents
+
+    races |> List.map (fun i ->
+                            let evCfg = config.Events |> Array.tryFind (fun e -> e.Num = i)
+                            let ev = match evCfg with
+                                     | Some ev ->
+                                        let fName = tryLocateFile dir ev.FileName
+                                        let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, ev.FileName)
+                                        
+                                        {
+                                            FileName = fName |> Option.defaultValue evFile;
+                                            Name = ev.Name |> Option.defaultValue "" ;
+                                            Date = ev.Date |> Option.defaultValue "";
+                                            Number = i;
+                                            Multiply = ev.Multiply |> Option.defaultValue 1.0m;
+                                            Rule = ev.CalcRule
+                                        }
+                                     | None ->
+                                        let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, "")
+                                        {FileName = evFile; Name=""; Date = ""; Number = i; Multiply = 1.0m; Rule = None}
+                            ev)

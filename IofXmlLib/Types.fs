@@ -72,9 +72,18 @@ module Types =
         Position : int
         Status : string
     }
+
+    type Event = {
+        FileName : string
+        Name : string
+        Number : int
+        Date : string
+        Multiply : decimal
+        Rule : string option
+    }
     
     type EventResult = {
-        EventFile : string
+        EventDetails : Event
         [<JsonConverter(typeof<CustomConverter.XmlResultIdConverter>)>]
         ClassId : XmlResult.Id
         PRR : PersonalRaceResult
@@ -89,6 +98,7 @@ module Types =
         OrganisationId : XmlResult.Id
         TotalPoints : decimal
         Results : seq<EventResult>
+        EventInfos : Event list
     }
 
     type SumResult = {
@@ -101,6 +111,7 @@ module Types =
         Disq : bool
         TimeBehind : float
         Results : seq<EventResult>
+        EventInfos : Event list
     }
 
     type TrimOptions = 

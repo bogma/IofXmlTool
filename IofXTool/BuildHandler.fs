@@ -63,37 +63,28 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
             | Some c -> c.Id
             | None -> cl
 
-        let buildEventResult (inputFile : string) =
-        
-            let fileName = Path.GetFileNameWithoutExtension(inputFile)
-            let eventMultiplier = 
-                let p = fileName.IndexOf("_")
-                let s = fileName.Substring(p-2, 2).AsInteger()
-                let eventList = config.Events |> Array.toList
-                let exists = eventList |> List.exists (fun x -> x.Num = s)
-                if exists then 
-                    match eventList |> List.filter (fun x -> x.Num = s) |> List.map (fun x -> x.Multiply) |> List.head with
-                    | Some x -> x
-                    | _ -> 1.0m
-                else 1.0m
-    
+        let buildEventResult (eventInfo : Event) =
+
             let calcSingleResult winningTime (item : ParsedResult) i =
-                let rule = 
-                    let cat = config.Classes.Classes |> Array.filter(fun x -> string x.Id = item.ClassId.Value) |> Array.tryHead
-                    match cat with
-                    | Some x ->
-                        match x.CalcRule with
+                let rule =
+                    match eventInfo.Rule with
+                    | Some r -> r
+                    | None ->
+                        let cat = config.Classes.Classes |> Array.filter(fun x -> string x.Id = item.ClassId.Value) |> Array.tryHead
+                        match cat with
                         | Some x ->
-                            if x = "" then
-                                config.General.CalcRule
-                            else
-                                x
+                            match x.CalcRule with
+                            | Some x ->
+                                if x = "" then
+                                    config.General.CalcRule
+                                else
+                                    x
+                            | None -> config.General.CalcRule
                         | None -> config.General.CalcRule
-                    | None -> config.General.CalcRule
                 let strategy = getCalcStrategy rule
                 let points = 
                     if (item.Status = "OK") then
-                        strategy.Execute winningTime (decimal item.Time) i * eventMultiplier
+                        strategy.Execute winningTime (decimal item.Time) i * eventInfo.Multiply
                     else
                         0m
                 { 
@@ -106,7 +97,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     Status = item.Status;
                 }
 
-            let r = parseResultXml inputFile
+            let r = parseResultXml eventInfo.FileName
                     |> filter config.Organisations.Filter (orgCfg |> List.map (fun x -> x.Id)) isSameOrg
                     |> filter config.Classes.Filter (classCfg |> List.map (fun x -> x.Id)) isSameClass
                     |> Seq.groupBy (fun i -> i.ClassId)
@@ -138,21 +129,29 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                                                                 Status = x.Status;
                                                                                 })
                                         clId, Seq.append (flattenSeqOfSeq res) others)
-            fileName, r
+            eventInfo, r
 
-        let competitions = 
+        let events = 
             match config.Type with
-            | "Cup" | "Sum" -> getFiles cArgs.wDir ((config.General.ResultFilePrefix) + "*_*.xml") config.General.RecurseSubDirs
+            | "Cup" | "Sum" -> getEventInfos config cArgs.wDir |> List.toSeq
             | "Team" ->
                 let inputFile = args.TryGetResult(Files) |> Option.defaultValue [""] |> List.head
                 match tryLocateFile cArgs.wDir inputFile with
                 | Some x ->
                     printfn "input file path %s is valid" x
-                    x |> Seq.singleton
+                    { FileName = x; Name = ""; Number = 1; Date = ""; Multiply = 1.0m; Rule = None} |> Seq.singleton
                 | None ->
                     printfn "input file not found"
                     Seq.empty
-            | _ -> Seq.empty
+            | _ -> 
+                printfn "no valid cup type given"
+                Seq.empty
+
+        let validEventInfo (eventInfo:Event) = not (eventInfo.FileName = "")
+
+        let competitions = events
+                            |> Seq.filter validEventInfo
+                            |> Seq.map (fun x -> x.FileName)
 
         let res = 
             match config.Type with
@@ -160,7 +159,8 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 if config.General.ConvertToJson then
                     competitions |> Seq.iter toJson |> ignore
 
-                let v = competitions
+                let v = events
+                        |> Seq.filter validEventInfo
                         |> Seq.map buildEventResult
                         |> flatten
                         |> Seq.groupBy (fun (event, cl, prr) -> cl.Value + "~" + prr.Name)
@@ -180,27 +180,28 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                                             let counts =
                                                                 if i < config.General.TakeBest then true
                                                                 else false
-                                                            { EventFile = a; ClassId = b; PRR = c; ResultCounts = counts; })
+                                                            { EventDetails = a; ClassId = b; PRR = c; ResultCounts = counts; })
                                         let sum = 
                                             countingResults
                                             |> Seq.sumBy (fun (_, _, prr) -> prr.Points)
-                                        { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalPoints = sum; Results = x })
+                                        { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalPoints = sum; Results = x; EventInfos = events |> Seq.toList })
                 Some (CupResult v)
             | "Sum" ->
                 if config.General.ConvertToJson then
                     competitions |> Seq.iter toJson |> ignore
 
-                let v = competitions
+                let v = events
+                        |> Seq.filter validEventInfo
                         |> Seq.map buildEventResult
                         |> flatten
                         |> Seq.groupBy (fun (event, cl, prr) -> cl.Value + "~" + prr.Name)
                         |> Seq.map (fun (_, r) ->
                                         let _, catId, prr = r |> Seq.head
                                         let sum = r |> Seq.sumBy (fun (_, _, prr) -> prr.Points) |> float
-                                        let x = r |> Seq.map (fun (a, b, c) -> { EventFile = a; ClassId = b; PRR = c; ResultCounts = true; })
+                                        let x = r |> Seq.map (fun (a, b, c) -> { EventDetails = a; ClassId = b; PRR = c; ResultCounts = true; })
                                         let eventsOk = x |> Seq.filter (fun i -> i.PRR.Status = "OK") |> Seq.length
                                         let disq = not (eventsOk = config.General.NumberOfEvents)
-                                        { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalTime = sum; TimeBehind = 0.0; Disq = disq; Results = x })
+                                        { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalTime = sum; TimeBehind = 0.0; Disq = disq; Results = x; EventInfos = events |> Seq.toList })
                         |> Seq.groupBy (fun x -> x.ClassId)
                         |> Seq.map (fun (_, clRes) -> 
                                         let validResults = clRes |> Seq.filter (fun x -> not x.Disq)
@@ -214,7 +215,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                             let diff = 
                                                 if x.Disq then 0.0
                                                 else x.TotalTime - winningTime
-                                            { PersonName = x.PersonName; ClassId = x.ClassId; OrganisationId = x.OrganisationId; TotalTime = x.TotalTime; TimeBehind = diff; Disq = x.Disq; Results = x.Results }))
+                                            { PersonName = x.PersonName; ClassId = x.ClassId; OrganisationId = x.OrganisationId; TotalTime = x.TotalTime; TimeBehind = diff; Disq = x.Disq; Results = x.Results; EventInfos = events |> Seq.toList }))
                         |> flattenSeqOfSeq
                 Some (SumResult v)
             | "Team" ->

@@ -2,30 +2,26 @@
 
 open System.IO
 open System.Reflection
-open Microsoft.FSharp.Reflection
 
 open Types
 open Argu
 open Helper
 open Commands
-open IofXmlLib.Calc
-open IofXmlLib.Helper
 open IofXmlLib.CalcLibBuilder
 
 let info (cArgs:CommonArgs) (args : ParseResults<_>) =
     
     let Config = XmlConfig.Load(Path.Combine(cArgs.wDir, cArgs.cfgFile))
 
-    let competitions = 
-        match Config.Type with
-        | "Team" -> Seq.empty
-        | "Cup" -> getFiles cArgs.wDir ((Config.General.ResultFilePrefix) + "*_*.xml") Config.General.RecurseSubDirs
-        | _ -> Seq.empty
-
     printfn "Type:\t%s" Config.Type
 
-    printfn "Input files matching filter (%s)" Config.General.ResultFilePrefix
-    competitions |> Seq.iter (printfn "\t%s")
+    match Config.Type with
+    | "Cup" | "Sum" ->
+        let events = getEventInfos Config cArgs.wDir |> List.toSeq
+        printfn "Input files matching filter (%s)" Config.General.ResultFileRegex
+        events |> Seq.iter (printfn "\t%A")
+    | _ -> printfn "no input files"
+
     ()
 
 let newProject (cArgs:CommonArgs) (args : ParseResults<_>) =

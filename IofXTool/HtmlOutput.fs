@@ -80,7 +80,7 @@ let buildResultHtml data =
                     if exists then
                         let i, catResult = classResults 
                                            |> Seq.find(fun (catId, res) -> isSame catId cfg.Id)
-                        let cr = recalcCupPositions catResult
+                        let finalCatRes = recalcCupPositions catResult
                         let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i
                         let getOrgNameById id = 
                             let cName, _ = getNamesById data.OrgCfg data.OrgInfo "Unknown Club" id
@@ -101,9 +101,8 @@ let buildResultHtml data =
                         let strategy = getCalcStrategy rule
 
                         let printDetailedResultRow (results : seq<EventResult>) (template:string) =
-                            let races = [1..data.Config.General.NumberOfEvents] |> List.map (fun i -> (data.Config.General.ResultFilePrefix) + i.ToString("D2") + "_" + (data.Config.General.Year).ToString())
-                            [ for r in races do
-                                 let p = results |> Seq.filter (fun eventResult -> eventResult.EventFile = r)
+                            [ for r in [1..data.Config.General.NumberOfEvents] do
+                                 let p = results |> Seq.filter (fun eventResult -> eventResult.EventDetails.Number = r)
                                  if Seq.isEmpty p then
                                       yield "<td/>"
                                  else 
@@ -115,14 +114,16 @@ let buildResultHtml data =
                                             |> add "time" (formatSeconds2Time eRes.PRR.Time)
                                             |> add "pos" eRes.PRR.Position
                                             |> add "status" (getStatusText data.Config.Translations eRes.PRR.Status)
-                                            |> fromFile template]
+                                            |> fromFile template ]
 
                         yield init
                             |> add "events" [1..data.Config.General.NumberOfEvents]
+                            |> add "generalEventTitle" data.Config.General.EventTitle
+                            |> add "eventInfos" (cr |> Seq.head).EventInfos
                             |> add "classFullName" cName
                             |> add "classShortName" cShort
                             |> add "hasShortName" (cShort.Length > 0)
-                            |> add "catResults" cr
+                            |> add "catResults" finalCatRes
                             |> add "getRowStyle" getRowStyle
                             |> add "getClubNameById" getOrgNameById
                             |> add "format" strategy.FormatPoints
@@ -168,9 +169,9 @@ let buildResultHtml data =
 
                         let isWinner rank = rank = 1
                         let printDetailedResultRow (results : seq<EventResult>) (template:string) =
-                            let races = [1..data.Config.General.NumberOfEvents] |> List.map (fun i -> (data.Config.General.ResultFilePrefix) + i.ToString("D2") + "_" + (data.Config.General.Year).ToString())
+                            let races = [1..data.Config.General.NumberOfEvents] // |> List.map (fun i -> (data.Config.General.ResultFilePrefix) + i.ToString("D2") + "_" + (data.Config.General.Year).ToString())
                             [ for r in races do
-                                 let p = results |> Seq.filter (fun eventResult -> eventResult.EventFile = r)
+                                 let p = results |> Seq.filter (fun eventResult -> eventResult.EventDetails.Number = r)
                                  if Seq.isEmpty p then
                                       yield "<td/>"
                                  else 

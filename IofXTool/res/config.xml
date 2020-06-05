@@ -5,7 +5,7 @@
            numberOfEvents="9"
            takeBest="6"
            calcRule="rule_name"
-           resultFilePrefix="SC"
+           resultFileRegex="SC_\d{2}_2020"
            recurseSubDirs="false"
            convertToJson="false"
            includeStatus="DidNotFinish,MissingPunch"
@@ -13,7 +13,7 @@
   </General>
   <Events>
     <!-- set num to 0 if not needed -->
-    <Event num="1" date="" name="" fileName=""/>
+    <Event num="1" date="1. Juli 1994" name="Chicken Tag 1" fileName=""/>
     <Event num="9" multiply="2.0" calcRule="participate" />
     <Event num="11" multiply="3.0" />
   </Events>

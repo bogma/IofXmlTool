@@ -1,14 +1,16 @@
 ﻿namespace IofXmlLib
 
-open System.Xml.Linq
-open System.Text
-open FSharp.Data
-open System
-
 module Helper =
 
-    open Types
+    open System
     open System.IO
+    open System.Text
+    open System.Text.RegularExpressions
+    open System.Xml.Linq
+
+    open FSharp.Data
+
+    open Types
 
     let runningTotal = List.scan (+) 0 >> List.tail
 
@@ -36,11 +38,22 @@ module Helper =
                  for s in inner do
                     yield s }
 
-    let rec getFiles dir pattern subdirs =
-        seq { yield! Directory.EnumerateFiles(dir, pattern)
+    let (|Regex|_|) pattern input =
+        let m = Regex.Match(input, pattern)
+        if m.Success then Some(List.tail [ for g in m.Groups -> g.Value ])
+        else None
+
+    let rec getFiles dir regex pattern subdirs =
+        seq { let files = Directory.EnumerateFiles(dir, pattern)
+              let filtered = files |> Seq.filter (fun x -> 
+                                                    let fn = Path.GetFileNameWithoutExtension(x)
+                                                    Regex.IsMatch(fn, regex))
+              ////printfn "#files = %d, #filtered = %d" (files |> Seq.length) (filtered |> Seq.length)
+              ////printfn "filtered files: %A" filtered
+              yield! filtered
               if subdirs then
                   for d in Directory.EnumerateDirectories(dir) do
-                      yield! getFiles d pattern subdirs }
+                      yield! getFiles d regex pattern subdirs }
 
     // build all combinations of lenght n from list l
     let rec comb n l = 

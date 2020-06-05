@@ -37,12 +37,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CalcLib\CalcLib.fsproj">
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <OutputItemType>Content</OutputItemType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </ProjectReference>
     <ProjectReference Include="..\IofXmlLib\IofXmlLib.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="CalcLib">
+      <HintPath>bin\Debug\netcoreapp3.1\CalcLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
