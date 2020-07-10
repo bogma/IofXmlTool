@@ -1,4 +1,4 @@
-<!-- supported types: Team, Cup -->
+<!-- supported types: Team, Cup, Sum-->
 <Configuration type="Cup">
   <General name="Sportvogl Cup 2016"
            year="2016"
@@ -6,11 +6,20 @@
            takeBest="6"
            calcRule="rule_name"
            resultFileRegex="SC_\d{2}_2020"
+           csvFields="Wertung;AK;Vorname;Nachname;Zeit;Platz;Club-Nr.;Katnr"
+           csvSeparator=";"
+           csvEncoding="iso-8859-1"
            recurseSubDirs="false"
            convertToJson="false"
            includeStatus="DidNotFinish,MissingPunch"
            eventTitle="Sbg.Cup">
   </General>
+  <PreProcessing>
+    <!-- options for input file preprocessing -->
+    <!-- mode: Allways, IfNewer -->
+    <Task name="toUtf8" active="true" mode="IfNewer"/>
+    <Task name="toJson" active="true" mode="Allways"/>
+  </PreProcessing>
   <Events>
     <!-- set num to 0 if not needed -->
     <Event num="1" date="1. Juli 1994" name="Chicken Tag 1" fileName=""/>

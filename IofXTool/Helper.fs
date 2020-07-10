@@ -77,10 +77,13 @@ let tryLocateFile (wDir:string) (f:string) =
 let getEventInfos (config:XmlConfig.Configuration) dir =
     let races = [1..config.General.NumberOfEvents]
     let matchingFiles = getFiles dir config.General.ResultFileRegex "*.xml" config.General.RecurseSubDirs
-    let matchingEvents = matchingFiles |> Seq.choose (fun x -> match x with
-                                                               | Regex config.General.ResultFileRegex [evNum] -> Some (int evNum, x)
-                                                               | _ -> None)
-    ////printfn "%A" matchingEvents
+    let matchingEvents = matchingFiles |> Seq.choose (fun x -> 
+                                                          let fn = Path.GetFileNameWithoutExtension(x)
+                                                          match fn with
+                                                          | Regex config.General.ResultFileRegex [evNum] -> Some (int evNum, x)
+                                                          | _ -> None)
+    
+    printfn "events matching the regex: %A" matchingEvents
 
     races |> List.map (fun i ->
                             let evCfg = config.Events |> Array.tryFind (fun e -> e.Num = i)

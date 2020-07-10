@@ -6,6 +6,7 @@ module Helper =
     open System.IO
     open System.Text
     open System.Text.RegularExpressions
+    open System.Xml
     open System.Xml.Linq
 
     open FSharp.Data
@@ -217,18 +218,42 @@ module Helper =
         Array.append (Array.ofList attrList) [|(xml.Name.LocalName, (Array.ofSeq children |> JsonValue.Record))|] |> JsonValue.Record
       else
         Array.append (Array.ofList attrList) (Array.ofSeq children) |> JsonValue.Record
-  
-    let toJson (inputFile : string) =
 
-        let isNewer file1 file2 =
-            if not(File.Exists(file1)) then
-                false
-            elif not(File.Exists(file2)) then
-                true
+    let isNewer file1 file2 =
+        if not(File.Exists(file1)) then
+            false
+        elif not(File.Exists(file2)) then
+            true
+        else
+            let fi1 = FileInfo(file1)
+            let fi2 = FileInfo(file2)
+            fi1.LastWriteTime > fi2.LastWriteTime
+
+    let getEncoding (encodingName: string) =
+        let enc = CodePagesEncodingProvider.Instance.GetEncoding(encodingName)
+        if enc = null then
+            let enc = Encoding.GetEncoding(encodingName)
+            if enc = null then
+                Encoding.Default
             else
-                let fi1 = FileInfo(file1)
-                let fi2 = FileInfo(file2)
-                fi1.LastWriteTime > fi2.LastWriteTime
+               enc
+        else
+            enc
+
+    let getXmlEncoding xmlFile =
+
+        let content = File.ReadAllText(xmlFile)
+        use sr = new StringReader(content)
+        let xrs = new XmlReaderSettings()
+        xrs.ConformanceLevel <- ConformanceLevel.Fragment
+        use xr = XmlReader.Create(sr, xrs)
+        
+        if not (xr.Read()) then
+            ""
+        else
+            xr.GetAttribute("encoding")
+
+    let toJson (inputFile : string) =
 
         let outputFile = Path.ChangeExtension(inputFile, "json")
 
@@ -240,4 +265,28 @@ module Helper =
             let enc = new UTF8Encoding(false);
             File.WriteAllText(outputFile, json.ToString(), enc)
         else
-            printfn "no need to write JSON %s" outputFile
+            printfn "no need to process JSON %s" inputFile
+
+    let toUtf8 (inputFile : string) =
+
+        let outputFile = Path.ChangeExtension(inputFile, "old")
+
+        if (isNewer inputFile outputFile) then
+            let encName = getXmlEncoding inputFile
+            if not (encName.ToLower().Equals("utf-8")) then
+                let enc = CodePagesEncodingProvider.Instance.GetEncoding(encName)
+                let content = File.ReadAllText(inputFile, enc)
+                let doc = XDocument.Parse(content)
+                let xws = new XmlWriterSettings()
+                xws.Indent <- true
+                xws.Encoding <- Encoding.UTF8
+                File.Delete outputFile
+                File.Move(inputFile, outputFile)
+                use xw = XmlWriter.Create(inputFile, xws)
+                printfn "write XML %s" inputFile
+                doc.WriteTo(xw)
+            else
+                printfn "%s is already in UTF-8 encoding" inputFile
+
+        else
+            printfn "no need to process %s" inputFile

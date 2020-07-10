@@ -97,6 +97,8 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     Status = item.Status;
                 }
 
+//                | CSV -> parseResultCsv config.General.CsvFields config.General.CsvSeparator config.General.CsvEncoding
+
             let r = parseResultXml eventInfo.FileName
                     |> filter config.Organisations.Filter (orgCfg |> List.map (fun x -> x.Id)) isSameOrg
                     |> filter config.Classes.Filter (classCfg |> List.map (fun x -> x.Id)) isSameClass
@@ -153,17 +155,23 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                             |> Seq.filter validEventInfo
                             |> Seq.map (fun x -> x.FileName)
 
+        config.PreProcessing.Tasks
+            |> Array.filter (fun x -> x.Active)
+            |> Array.map (fun x -> 
+                    match x.Name with
+                    | "toJson" -> competitions |> Seq.iter toJson
+                    | "toUtf8" -> competitions |> Seq.iter toUtf8
+                    | _ -> printfn "preprocessing option %s is not supported" x.Name)
+            |> ignore
+
         let res = 
             match config.Type with
             | "Cup" ->
-                if config.General.ConvertToJson then
-                    competitions |> Seq.iter toJson |> ignore
-
                 let v = events
                         |> Seq.filter validEventInfo
                         |> Seq.map buildEventResult
                         |> flatten
-                        |> Seq.groupBy (fun (event, cl, prr) -> cl.Value + "~" + prr.Name)
+                        |> Seq.groupBy (fun (_, cl, prr) -> cl.Value + "~" + prr.Name)
                         |> Seq.map (fun (_, r) ->
                                         let _, catId, prr =
                                             r
@@ -187,14 +195,11 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalPoints = sum; Results = x; EventInfos = events |> Seq.toList })
                 Some (CupResult v)
             | "Sum" ->
-                if config.General.ConvertToJson then
-                    competitions |> Seq.iter toJson |> ignore
-
                 let v = events
                         |> Seq.filter validEventInfo
                         |> Seq.map buildEventResult
                         |> flatten
-                        |> Seq.groupBy (fun (event, cl, prr) -> cl.Value + "~" + prr.Name)
+                        |> Seq.groupBy (fun (_, cl, prr) -> cl.Value + "~" + prr.Name)
                         |> Seq.map (fun (_, r) ->
                                         let _, catId, prr = r |> Seq.head
                                         let sum = r |> Seq.sumBy (fun (_, _, prr) -> prr.Points) |> float
