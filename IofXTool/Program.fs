@@ -88,7 +88,7 @@ let main argv =
              handleCommand commonArgs (args.GetSubCommand())
 
     with e ->
-         printfn "%s" e.Message
+         printfn "%s %s" e.Message e.StackTrace
     0
 
 

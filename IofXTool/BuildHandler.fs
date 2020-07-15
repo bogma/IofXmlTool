@@ -8,15 +8,16 @@ open Argu
 open IofXmlLib.Types
 open IofXmlLib.Calc
 open IofXmlLib.Helper
-open IofXmlLib.Parsing
+open IofXmlLib.PreProcessors
+open IofXmlLib.XmlParser
 
 open Types
 open Helper
 open Commands
 open HtmlOutput
-open FSharp.Data
 open Newtonsoft.Json
 open SelectPdf
+open System.Collections.Generic
 
 let build (cArgs:CommonArgs) (args : ParseResults<_>) =
     
@@ -151,18 +152,25 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
 
         let validEventInfo (eventInfo:Event) = not (eventInfo.FileName = "")
 
+        config.PreProcessing.Tasks
+            |> Array.filter(fun x -> x.Name = "fromCSV")
+            |> Array.iter(fun x ->
+                let csvResultFiles = getFiles cArgs.wDir config.General.ResultFileRegex "*.csv" config.General.RecurseSubDirs
+                let csvParams : IDictionary<string,string> = x.Params |> Array.map (fun x -> x.Key, x.Value) |> Array.toSeq |> dict
+                csvResultFiles |> Seq.iter (fromCSV csvParams))
+
         let competitions = events
                             |> Seq.filter validEventInfo
                             |> Seq.map (fun x -> x.FileName)
 
         config.PreProcessing.Tasks
             |> Array.filter (fun x -> x.Active)
-            |> Array.map (fun x -> 
+            |> Array.iter (fun x -> 
                     match x.Name with
+                    | "fromCSV" -> ()
                     | "toJson" -> competitions |> Seq.iter toJson
                     | "toUtf8" -> competitions |> Seq.iter toUtf8
                     | _ -> printfn "preprocessing option %s is not supported" x.Name)
-            |> ignore
 
         let res = 
             match config.Type with

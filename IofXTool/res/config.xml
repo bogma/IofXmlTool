@@ -6,9 +6,6 @@
            takeBest="6"
            calcRule="rule_name"
            resultFileRegex="SC_\d{2}_2020"
-           csvFields="Wertung;AK;Vorname;Nachname;Zeit;Platz;Club-Nr.;Katnr"
-           csvSeparator=";"
-           csvEncoding="iso-8859-1"
            recurseSubDirs="false"
            convertToJson="false"
            includeStatus="DidNotFinish,MissingPunch"
@@ -16,9 +13,24 @@
   </General>
   <PreProcessing>
     <!-- options for input file preprocessing -->
-    <!-- mode: Allways, IfNewer -->
-    <Task name="toUtf8" active="true" mode="IfNewer"/>
-    <Task name="toJson" active="true" mode="Allways"/>
+    <Task name="fromCSV" active="true">
+      <Param key="separator">;</Param>
+      <Param key="encoding">iso-8859-1</Param>
+      <Param key="controlCard">Chipnr</Param>
+      <Param key="givenName">Vorname</Param>
+      <Param key="familyName">Nachname</Param>
+      <Param key="notCompeting">AK</Param>
+      <Param key="status">Wertung</Param>
+      <Param key="time">Zeit</Param>
+      <Param key="position">Platz</Param>
+      <Param key="orgId">Club-Nr.</Param>
+      <Param key="orgName">Ort</Param>
+      <Param key="classId">Katnr</Param>
+      <Param key="className">Lang</Param>
+      <Param key="classNameShort">Kurz</Param>
+    </Task>
+    <Task name="toUtf8" active="true" />
+    <Task name="toJson" active="true" />
   </PreProcessing>
   <Events>
     <!-- set num to 0 if not needed -->

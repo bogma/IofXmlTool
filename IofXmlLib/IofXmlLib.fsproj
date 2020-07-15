@@ -18,7 +18,10 @@
     <Compile Include="Types.fs" />
     <Compile Include="CalcLibBuilder.fs" />
     <Compile Include="Helper.fs" />
-    <Compile Include="Parsing.fs" />
+    <Compile Include="XmlToolkit.fs" />
+    <Compile Include="CsvParser.fs" />
+    <Compile Include="XmlParser.fs" />
+    <Compile Include="PreProcessors.fs" />
   </ItemGroup>
 
   <ItemGroup>
