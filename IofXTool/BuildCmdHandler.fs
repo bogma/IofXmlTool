@@ -1,4 +1,4 @@
-﻿module BuildHandler
+﻿module BuildCmdHandler
 
 open System
 open System.IO
@@ -8,6 +8,7 @@ open Argu
 open IofXmlLib.Types
 open IofXmlLib.Calc
 open IofXmlLib.Helper
+open IofXmlLib.Logging
 open IofXmlLib.PreProcessors
 open IofXmlLib.XmlParser
 
@@ -141,13 +142,13 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 let inputFile = args.TryGetResult(Files) |> Option.defaultValue [""] |> List.head
                 match tryLocateFile cArgs.wDir inputFile with
                 | Some x ->
-                    printfn "input file path %s is valid" x
+                    tracer.Info "input file path %s is valid" x
                     { FileName = x; Name = ""; Number = 1; Date = ""; Multiply = 1.0m; Rule = None} |> Seq.singleton
                 | None ->
-                    printfn "input file not found"
+                    tracer.Warn "input file not found"
                     Seq.empty
             | _ -> 
-                printfn "no valid cup type given"
+                tracer.Error "no valid cup type given. please check your configuration file."
                 Seq.empty
 
         let validEventInfo (eventInfo:Event) = not (eventInfo.FileName = "")
@@ -170,7 +171,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     | "fromCSV" -> ()
                     | "toJson" -> competitions |> Seq.iter toJson
                     | "toUtf8" -> competitions |> Seq.iter toUtf8
-                    | _ -> printfn "preprocessing option %s is not supported" x.Name)
+                    | _ -> tracer.Warn "preprocessing option %s is not supported" x.Name)
 
         let res = 
             match config.Type with
@@ -299,13 +300,13 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 let outputFile = Path.Combine(data.InputPath, data.Config.Output.Pdf.FileName)
                 doc.Save(outputFile)
                 doc.Close()
-                printfn "PDF output written to %s" outputFile
+                tracer.Info "PDF output written to %s" outputFile
 
             if config.Type = "Cup" && config.Output.Json.Active then
                 let outputFile = Path.Combine(cArgs.wDir, config.Output.Json.FileName)
                 let json = JsonConvert.SerializeObject(r)
                 File.WriteAllText(outputFile, json, Text.Encoding.UTF8)
-                printfn "JSON output written to %s" outputFile
+                tracer.Info "JSON output written to %s" outputFile
 
             ()
         | None -> ()

@@ -2,6 +2,8 @@
 
 open IofXmlLib.Types
 open IofXmlLib.Helper
+open IofXmlLib.Logging
+
 open Types
 open System.IO
 open System.Reflection
@@ -26,15 +28,11 @@ let levenshteinCheck (data:ResultData) =
                                 cl, s)
                         | _ -> Seq.empty
 
-    printfn "checking names with Levenshtein-distance <= 3"
+    tracer.Info "checking names with Levenshtein-distance <= 3"
 
     for cr in classResults do
         let catId = fst cr
-        let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" catId
-        if cShort.Length > 0 then
-            printf "\tclass %s (%s)" cName cShort
-        else
-            printf "\tclass %s" cName
+        let cName, _ = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" catId
         let cs = snd cr
                 //|> Seq.map( fun cupResult -> cupResult.PersonName)
                 |> Seq.toList
@@ -43,15 +41,17 @@ let levenshteinCheck (data:ResultData) =
                 |> List.filter (fun (a, b, x) -> x <= 3)
 
         if cs.Length > 0 then
-            printfn "\t%A" cs
+            tracer.Warn "\tclass '%s' -> \t%A" cName cs
         else
-            printfn "\tok"
+            tracer.Info "\tclass '%s' -> ok" cName
     ()
 
 let checkNameTypos (data:ResultData) = 
     match data.Result with
-    | TeamResult _ -> printfn "no typo check on Team"
-    | SumResult _ | CupResult _ -> levenshteinCheck data |> ignore
+    | TeamResult _ ->
+        tracer.Debug "no typo check on Team"
+    | SumResult _ | CupResult _ ->
+        levenshteinCheck data |> ignore
 
 let tryLocateFile (wDir:string) (f:string) =
     // check if we have rooted path
@@ -61,14 +61,14 @@ let tryLocateFile (wDir:string) (f:string) =
         // we have rel path
         // first try working dir
         let fn = Path.Combine(wDir, f)
-        printfn "testing %s" fn
+        tracer.Trace "testing %s" fn
         if File.Exists(fn) then
             Some fn
         else
             // check program dir
             let p = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
             let fn = Path.Combine(p, f)
-            printfn "testing %s" fn
+            tracer.Trace "testing %s" fn
             if File.Exists(fn) then
                 Some fn
             else
@@ -76,6 +76,9 @@ let tryLocateFile (wDir:string) (f:string) =
 
 let getEventInfos (config:XmlConfig.Configuration) dir =
     let races = [1..config.General.NumberOfEvents]
+
+    tracer.Debug "searching for events matching the regex: %s (subdirs include: %b)" config.General.ResultFileRegex config.General.RecurseSubDirs
+
     let matchingFiles = getFiles dir config.General.ResultFileRegex "*.xml" config.General.RecurseSubDirs
     let matchingEvents = matchingFiles |> Seq.choose (fun x -> 
                                                           let fn = Path.GetFileNameWithoutExtension(x)
@@ -83,7 +86,7 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
                                                           | Regex config.General.ResultFileRegex [evNum] -> Some (int evNum, x)
                                                           | _ -> None)
     
-    printfn "events matching the regex: %A" matchingEvents
+    tracer.Info "found the followin events: %A" matchingEvents
 
     races |> List.map (fun i ->
                             let evCfg = config.Events |> Array.tryFind (fun e -> e.Num = i)

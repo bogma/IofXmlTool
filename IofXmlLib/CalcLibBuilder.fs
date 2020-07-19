@@ -6,6 +6,7 @@ open System.Reflection
 open FSharp.Compiler.SourceCodeServices
 
 open Types
+open Logging
 
 module CalcLibBuilder =
 
@@ -50,7 +51,7 @@ module Calc =
                 [f, m])
 
     let buildCalcLib ruleFile =
-        printfn "compiling rules from %s" ruleFile
+        tracer.Info "compiling rules from %s" ruleFile
         let checker = FSharpChecker.Create()
         let p = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)
         let fn = Path.Combine(p, "CalcLib")
@@ -62,15 +63,15 @@ module Calc =
         let errors1, exitCode1 =
             let additionalFunctions, additionalMatches = readCalcRuleDefinitions [ruleFile] |> List.head
             let code = System.String.Format(template, additionalFunctions, additionalMatches)
-            printfn "%s" code
+            tracer.Info "%s" code
             File.WriteAllText(fn2, code)
             checker.Compile([| "fsc.exe"; "-o"; fn3; "-a"; fn2; |])
             |> Async.RunSynchronously
         match errors1, exitCode1 with
         | [| |], 0 ->
-            printfn "Compilation successful - new calculation rules available"
+            tracer.Warn "Compilation successful - new calculation rules available"
         | _ -> 
-            printfn "Compilation failed - Exit code %d\n%A" exitCode1 errors1
+            tracer.Error "Compilation failed - Exit code %d\n%A" exitCode1 errors1
             File.Delete fn2
             File.Delete fn3
             File.Move(fn4, fn3)
@@ -78,7 +79,7 @@ module Calc =
     
     let readResource (resourceName:string) =
         match resourceName.Split(',') with
-        | [| asmName; name |] ->
+        | [| _; name |] ->
             let asm = Assembly.GetExecutingAssembly()
             use sr = new StreamReader(asm.GetManifestResourceStream(name.Trim()))
             Some(sr.ReadToEnd())

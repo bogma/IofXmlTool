@@ -16,6 +16,7 @@
     <Content Include="res\ResultListSampleData.html" />
     <EmbeddedResource Include="res\ResultListSampleData.xml" />
     <Compile Include="Types.fs" />
+    <Compile Include="Logging.fs" />
     <Compile Include="CalcLibBuilder.fs" />
     <Compile Include="Helper.fs" />
     <Compile Include="XmlToolkit.fs" />
@@ -29,6 +30,7 @@
     <PackageReference Include="FSharp.Data" Version="3.3.3" />
     <PackageReference Include="Fue" Version="1.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="NLog" Version="4.7.2" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.1" />
     <PackageReference Update="FSharp.Core" Version="4.7.1" />
   </ItemGroup>

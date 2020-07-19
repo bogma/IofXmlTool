@@ -2,9 +2,11 @@
 
 module XmlParser =
 
+    open System.IO
+
     open Helper
     open Types
-    open System.IO
+    open Logging
 
     let parseResultXml (uri : string) : list<ParsedResult> =
 
@@ -25,7 +27,7 @@ module XmlParser =
 
         let enc = getXmlEncoding uri |> getEncoding
         let content = File.ReadAllText(uri, enc)
-        printfn "parsing %s" uri
+        tracer.Debug "parsing %s" uri
         let parsedXml = XmlResult.Parse(content)
 
         match parsedXml.ResultList with

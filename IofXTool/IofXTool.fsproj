@@ -24,15 +24,17 @@
     <Compile Include="Types.fs" />
     <Compile Include="Helper.fs" />
     <Compile Include="HtmlOutput.fs" />
-    <Compile Include="BuildHandler.fs" />
+    <Compile Include="BuildCmdHandler.fs" />
+    <Compile Include="RuleCmdHandler.fs" />
     <Compile Include="CommandHandlers.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Argu" Version="6.0.0" />
+    <PackageReference Include="Argu" Version="6.1.1" />
     <PackageReference Include="Fue" Version="1.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="NLog" Version="4.7.2" />
     <PackageReference Include="Select.HtmlToPdf.NetCore" Version="20.1.0" />
   </ItemGroup>
 
@@ -47,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="4.7.1" />
+    <PackageReference Update="FSharp.Core" Version="4.7.2" />
   </ItemGroup>
 
 </Project>

@@ -62,11 +62,11 @@ with
 type Command =
     // global options
     |                                                   Version
-    | [<AltCommandLine("-p"); Inherit>]                  Working_Directory of path:string
-    | [<AltCommandLine("-c"); Inherit>]                  Config_File of config:string
-    //| [<AltCommandLine("-s");Inherit>]                  Silent
-    //| [<AltCommandLine("-v");Inherit>]                  Verbose
-    //| [<Inherit>]                                       Log_File of path:string
+    | [<AltCommandLine("-p"); Inherit>]                 Working_Directory of path:string
+    | [<AltCommandLine("-c"); Inherit>]                 Config_File of config:string
+    | [<AltCommandLine("-s"); Inherit>]                 Silent
+    | [<AltCommandLine("-v"); Inherit>]                 Verbose
+    | [<Inherit>]                                       Log_File of path:string
     // subcommands
     | [<CustomCommandLine("new")>]                      New of ParseResults<NewArgs>
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
@@ -77,21 +77,20 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | New _ -> "create a new project"
-            | Add _ -> "add a new resource to project"
-            | Build _ -> "build a project"
-            | Info _ -> "print project info"
-            | Rules _ -> "add new caluclation rules"
-            | Working_Directory _ -> "the working directory"
-            | Config_File _ -> "the project configuration file"
-            //| Log_File _ -> "print output to a file"
-            //| Silent -> "suppress console output"
-            //| Verbose -> "print detailed information to the console"
-            | Version -> "show Paket version"
+            | New _ ->                  "create a new project"
+            | Add _ ->                  "add a new resource to project"
+            | Build _ ->                "build a project"
+            | Info _ ->                 "print project info"
+            | Rules _ ->                "add new caluclation rules"
+            | Working_Directory _ ->    "the working directory"
+            | Config_File _ ->          "the project configuration file"
+            | Log_File _ ->             "print output to a file"
+            | Silent ->                 "suppress console output"
+            | Verbose ->                "print detailed information to the console"
+            | Version ->                "show tool version"
 
 
 type CommonArgs = {
     wDir : string
     cfgFile : string
-    silent : bool
 }

@@ -10,7 +10,7 @@ module PreProcessors =
     open System.Xml.Linq
     open IofXmlLib.Helper
     open IofXmlLib.CsvParser
-    open IofXmlLib.Types
+    open IofXmlLib.Logging
     open IofXmlLib.XmlToolkit
 
     let toJson (inputFile : string) =
@@ -21,11 +21,11 @@ module PreProcessors =
             let content = File.ReadAllText(inputFile, System.Text.Encoding.UTF8)
             let doc = XDocument.Parse(content)
             let json = fromXml doc.Root
-            printfn "write JSON %s" outputFile
+            tracer.Info "write JSON %s" outputFile
             let enc = new UTF8Encoding(false);
             File.WriteAllText(outputFile, json.ToString(), enc)
         else
-            printfn "no need to process JSON %s" inputFile
+            tracer.Debug "no need to process JSON %s" inputFile
 
     let toUtf8 (inputFile : string) =
 
@@ -38,10 +38,10 @@ module PreProcessors =
             xws.Indent <- true
             xws.Encoding <- Encoding.UTF8
             use xw = XmlWriter.Create(inputFile, xws)
-            printfn "write XML %s" inputFile
+            tracer.Info "write XML %s" inputFile
             doc.WriteTo(xw)
         else
-            printfn "%s is already in UTF-8 encoding" inputFile
+            tracer.Debug "%s is already in UTF-8 encoding" inputFile
 
     let fromCSV (csvParams : IDictionary<string,string>) (inputFile : string) =
         let outputFile = Path.ChangeExtension(inputFile, "xml")
@@ -96,8 +96,8 @@ module PreProcessors =
             use xw = XmlWriter.Create(outputFile, xws)
             doc.WriteTo(xw)
             
-            printfn "CSV parsed: %d entries" res.Length
+            tracer.Info "CSV parsed: %d entries" res.Length
         else
-            printfn "no need to process CSV %s" inputFile
+            tracer.Debug "no need to process CSV %s" inputFile
 
 

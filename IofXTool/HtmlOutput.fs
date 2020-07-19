@@ -3,6 +3,7 @@
 open IofXmlLib.Types
 open IofXmlLib.Helper
 open IofXmlLib.Calc
+open IofXmlLib.Logging
 
 open Types
 open Helper
@@ -215,4 +216,4 @@ let buildResultHtml data =
             compiledHtml
 
     File.WriteAllText(outputFile, html)
-    printfn "HTML output written to %s" outputFile
+    tracer.Info "HTML output written to %s" outputFile

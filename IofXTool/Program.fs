@@ -1,25 +1,22 @@
 ﻿open System
+open System.Reflection
 open Argu
 
 open Commands
-open BuildHandler
 open CommandHandlers
 open System.IO
+open IofXmlLib.Logging
 
 let toolVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
-let mutable tracedVersion = false
-
 let traceVersion silent =
-    if not silent && not tracedVersion then
-        tracedVersion <- true
+    if not silent then
         printfn "IOF XML tool version %s" toolVersion
 
 let processWithValidationEx printUsage cArgs validateF subCmd subArgs =
-    traceVersion cArgs.silent
     if not (validateF subArgs) then
-        printfn "Command was:"
-        Environment.GetCommandLineArgs() |> Array.iter (printf "%s ")
+        tracer.Warn "Command was:"
+        Environment.GetCommandLineArgs() |> Array.iter (tracer.Warn "%s ")
         printUsage subArgs
 
         Environment.ExitCode <- 1
@@ -41,17 +38,16 @@ let handleCommand cArgs command =
     match command with
     | New a -> processCommand cArgs newProject a
     | Add a -> processCommand cArgs add a
-    | Build a -> processCommand cArgs build a
+    | Build a -> processCommand cArgs BuildCmdHandler.build a
     | Info a -> processCommand cArgs info a
-    | Rules a -> processCommand cArgs rules a
+    | Rules a -> processCommand cArgs RuleCmdHandler.rules a
     // global options; list here in order to maintain compiler warnings
-    // in case of new subcommands added
-    ////| Verbose
-    ////| Silent
+    | Verbose
+    | Silent
     | Version
     | Working_Directory _ -> failwithf "internal error: this code should never be reached."
     | Config_File _ -> failwithf "internal error: this code should never be reached."
-    ////| Log_File _ -> failwithf "internal error: this code should never be reached."
+    | Log_File _ -> failwithf "internal error: this code should never be reached."
 
 [<EntryPoint>]
 let main argv =
@@ -68,27 +64,20 @@ let main argv =
         let commonArgs = {
             wDir = args.GetResult (Working_Directory, defaultValue = Directory.GetCurrentDirectory());
             cfgFile = args.GetResult (Config_File, defaultValue = "config.xml");
-            silent = false ////args.Contains <@ Silent @>
         }
         
-        traceVersion commonArgs.silent
-
-        ////if pArgs.Contains <@ Verbose @> then
-        ////    Logging.verbose <- true
-        ////    Logging.verboseWarnings <- true
-
         let version = args.Contains <@ Command.Version @>
+        let isSilent = args.Contains <@ Silent @>
+        let isVerbose = args.Contains <@ Verbose @>
+        
+        traceVersion isSilent
 
         if not version then
-             ////use fileTrace =
-             ////    match pArgs.TryGetResult <@ Log_File @> with
-             ////    | Some lf -> setLogFile lf
-             ////    | None -> null
+            let logFileName = args.TryGetResult <@ Log_File @>
+            configureNLog isVerbose isSilent logFileName commonArgs.wDir
 
-             handleCommand commonArgs (args.GetSubCommand())
+            handleCommand commonArgs (args.GetSubCommand())
 
     with e ->
-         printfn "%s %s" e.Message e.StackTrace
+         tracer.ErrorException e "%s %s" e.Message e.StackTrace
     0
-
-
