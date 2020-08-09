@@ -75,63 +75,82 @@ let buildResultHtml data =
                 |> Seq.groupBy (fun cupResult -> cupResult.ClassId.Value)
                 |> Seq.map (fun (x,y) -> XmlResult.Id (None, string x),y)
 
+            let classList =
+                classResults
+                |> Seq.map(fun (x,_) -> x)
+                |> Seq.toList
+
+            let classWeight =
+                if data.Config.Classes.PresentationOrder = "" then
+                    List.Empty
+                else
+                    data.Config.Classes.PresentationOrder.Split[|','|]
+                    |> Array.toList
+                    |> List.map (fun y -> y.Trim())
+                    |> List.map (fun y -> XmlResult.Id(None, y))
+                    |> List.filter (fun x -> classList |> List.exists (fun y -> isSame y x))
+
+            let unsortedClassList =
+                classList
+                |> List.filter(fun x -> classWeight |> List.exists(fun y -> isSame y x) |> not)
+
+            let orderdClassList =
+                classWeight @ unsortedClassList
+
             let catRes =
-                [ for cfg in data.ClassInfo do
-                    let exists = classResults |> Seq.exists(fun (catId, _) -> isSame catId cfg.Id)
-                    if exists then
-                        let i, catResult = classResults 
-                                           |> Seq.find(fun (catId, res) -> isSame catId cfg.Id)
-                        let finalCatRes = recalcCupPositions catResult
-                        let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i
-                        let getOrgNameById id = 
-                            let cName, _ = getNamesById data.OrgCfg data.OrgInfo "Unknown Club" id
-                            cName
+                [ for cl in orderdClassList do
+                    let i, catResult = classResults |> Seq.find(fun (catId, _) -> isSame catId cl)
+                    let finalCatRes = recalcCupPositions catResult
+                    let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i
+                    let getOrgNameById id = 
+                        let cName, _ = getNamesById data.OrgCfg data.OrgInfo "Unknown Club" id
+                        cName
 
-                        let rule = 
-                            let cat = data.Config.Classes.Classes |> Array.filter(fun x -> string x.Id = cfg.Id.Value) |> Array.tryHead
-                            match cat with
+                    let rule = 
+                        let cat = data.Config.Classes.Classes |> Array.filter(fun x -> string x.Id = cl.Value) |> Array.tryHead
+                        match cat with
+                        | Some x ->
+                            match x.CalcRule with
                             | Some x ->
-                                match x.CalcRule with
-                                | Some x ->
-                                    if x = "" then
-                                        data.Config.General.CalcRule
-                                    else
-                                        x
-                                | None -> data.Config.General.CalcRule
+                                if x = "" then
+                                    data.Config.General.CalcRule
+                                else
+                                    x
                             | None -> data.Config.General.CalcRule
-                        let strategy = getCalcStrategy rule
+                        | None -> data.Config.General.CalcRule
+                    let strategy = getCalcStrategy rule
 
-                        let printDetailedResultRow (results : seq<EventResult>) (template:string) =
-                            [ for r in [1..data.Config.General.NumberOfEvents] do
-                                 let p = results |> Seq.filter (fun eventResult -> eventResult.EventDetails.Number = r)
-                                 if Seq.isEmpty p then
-                                      yield "<td/>"
-                                 else 
-                                      let eRes = p |> Seq.take 1 |> Seq.exactlyOne
-                                      yield init
-                                            |> add "statusOk" (eRes.PRR.Status = "OK")
-                                            |> add "resultCounts" eRes.ResultCounts
-                                            |> add "points" (strategy.FormatPoints eRes.PRR.Points)
-                                            |> add "time" (formatSeconds2Time eRes.PRR.Time)
-                                            |> add "pos" eRes.PRR.Position
-                                            |> add "status" (getStatusText data.Config.Translations eRes.PRR.Status)
-                                            |> fromFile template ]
+                    let printDetailedResultRow (results : seq<EventResult>) (template:string) =
+                        [ for r in [1..data.Config.General.NumberOfEvents] do
+                                let p = results |> Seq.filter (fun eventResult -> eventResult.EventDetails.Number = r)
+                                if Seq.isEmpty p then
+                                    yield "<td/>"
+                                else 
+                                    let eRes = p |> Seq.take 1 |> Seq.exactlyOne
+                                    yield init
+                                        |> add "statusOk" (eRes.PRR.Status = "OK")
+                                        |> add "resultCounts" eRes.ResultCounts
+                                        |> add "points" (strategy.FormatPoints eRes.PRR.Points)
+                                        |> add "time" (formatSeconds2Time eRes.PRR.Time)
+                                        |> add "pos" eRes.PRR.Position
+                                        |> add "status" (getStatusText data.Config.Translations eRes.PRR.Status)
+                                        |> fromFile template ]
 
-                        yield init
-                            |> add "events" [1..data.Config.General.NumberOfEvents]
-                            |> add "generalEventTitle" data.Config.General.EventTitle
-                            |> add "eventInfos" (cr |> Seq.head).EventInfos
-                            |> add "classFullName" cName
-                            |> add "classShortName" cShort
-                            |> add "hasShortName" (cShort.Length > 0)
-                            |> add "catResults" finalCatRes
-                            |> add "getRowStyle" getRowStyle
-                            |> add "getClubNameById" getOrgNameById
-                            |> add "format" strategy.FormatPoints
-                            |> add "printDetailedResultRow" printDetailedResultRow
-                            |> add "templateFile" detailsTemplateFile
-                            |> add "combineListToString" combineListToString
-                            |> fromFile classTemplateFile]
+                    yield init
+                        |> add "events" [1..data.Config.General.NumberOfEvents]
+                        |> add "generalEventTitle" data.Config.General.EventTitle
+                        |> add "eventInfos" (cr |> Seq.head).EventInfos
+                        |> add "classFullName" cName
+                        |> add "classShortName" cShort
+                        |> add "hasShortName" (cShort.Length > 0)
+                        |> add "catResults" finalCatRes
+                        |> add "getRowStyle" getRowStyle
+                        |> add "getClubNameById" getOrgNameById
+                        |> add "format" strategy.FormatPoints
+                        |> add "printDetailedResultRow" printDetailedResultRow
+                        |> add "templateFile" detailsTemplateFile
+                        |> add "combineListToString" combineListToString
+                        |> fromFile classTemplateFile]
 
             let compiledHtml =
                 init
@@ -145,7 +164,6 @@ let buildResultHtml data =
                 |> add "catResult" catRes
                 |> fromFile docTemplateFile
             compiledHtml
-
         | SumResult sr ->
             let detailsTemplateFile = Path.Combine(data.InputPath, data.Config.Output.Html.DetailsTemplate)
 

@@ -34,25 +34,28 @@
   </PreProcessing>
   <Events>
     <!-- set num to 0 if not needed -->
-    <Event num="1" date="1. Juli 1994" name="Chicken Tag 1" fileName=""/>
+    <Event num="1" date="1. Juli 1994" name="Chicken Tag 1" fileName="">
+      <map type="class" from="a" to="b" />
+      <map type="org" from="c" to="d" />
+    </Event>
     <Event num="9" multiply="2.0" calcRule="participate" />
     <Event num="11" multiply="3.0" />
   </Events>
-  <Classes filter="include">
+  <Classes filter="include" presentationOrder="a,1,3,5,2,4,6">
     <!-- filter = include ... includes all Classes listed
          filter = exclude ... excludes all Classes listed
          any other filter ... use all Classes in result file -->
-    <Class name="Oberstufe Herren" id="1" diplayName="OS H" calcRule="SbgCup"/>
-    <Class name="Oberstufe Damen" id="2" diplayName="OS D" />
-    <Class name="Unterstufe Herren -2006" id="3" diplayName="US H -06" />
-    <Class name="Unterstufe Damen -2006" id="4" diplayName="US D -06" />
-    <Class name="Unterstufe Herren 2004/05" id="5" diplayName="US H 04/05"/>
-    <Class name="Unterstufe Damen 2004/05" id="6" diplayName="US D 04/05" />
-    <Class name="Unterstufe Herren" id="11" diplayName="US H"/>
-    <Class name="Unterstufe Damen" id="12" diplayName="US D" />
+    <Class name="Oberstufe Herren" id="1" shortName="OS H" calcRule="SbgCup"/>
+    <Class name="Oberstufe Damen" id="2" shortName="OS D" />
+    <Class name="Unterstufe Herren -2006" id="3" shortName="US H -06" />
+    <Class name="Unterstufe Damen -2006" id="4" shortName="US D -06" />
+    <Class name="Unterstufe Herren 2004/05" id="5" shortName="US H 04/05"/>
+    <Class name="Unterstufe Damen 2004/05" id="6" shortName="US D 04/05" />
+    <Class name="Unterstufe Herren" id="11" shortName="US H"/>
+    <Class name="Unterstufe Damen" id="12" shortName="US D" />
     <!-- list class ids (comma separated) to be combined to one virtual 'class' -->
-    <Combine name="Unterstufe Herren" classIds="abc" diplayName="US H"/>
-    <Combine name="Unterstufe Damen" classIds="efg,uvs" diplayName="US H"/>
+    <Combine name="Unterstufe Herren" classIds="abc" shortName="US H"/>
+    <Combine name="Unterstufe Damen" classIds="efg,uvs" shortName="US H"/>
   </Classes>
   <Organisations filter="include">
     <!-- filter = include ... includes all Organisations listed
@@ -71,7 +74,7 @@
           docTemplate="./resources/document_template.html"
           classTemplate="./resources/class_template.html"
           detailsTemplate="./resources/details_template.html"
-          cssFile="./resources/default.css"></Html>
+          cssFile="./resources/default.css" />
     <Pdf active="true"
          fileName="cup-2016.pdf"
          pageOrientation="Landscape"
@@ -79,8 +82,8 @@
          marginLeft="10"
          marginTop="20"
          marginRight="10"
-         marginBottom="20"></Pdf>
-    <Json active="true" fileName="cup-2016.json"></Json>
+         marginBottom="20" />
+    <Json active="true" fileName="cup-2016.json" />
   </Output>
   <Names>
     <Name name="Bubu" aliasFor="der Hund, the great"/>

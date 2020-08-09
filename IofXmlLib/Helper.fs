@@ -214,7 +214,7 @@ module Helper =
 
       // Concatenate elements produced for child elements & attributes
       let attrList = attrs xml
-      if (xml.Parent = null) then
+      if (isNull xml.Parent) then
         Array.append (Array.ofList attrList) [|(xml.Name.LocalName, (Array.ofSeq children |> JsonValue.Record))|] |> JsonValue.Record
       else
         Array.append (Array.ofList attrList) (Array.ofSeq children) |> JsonValue.Record
@@ -231,9 +231,9 @@ module Helper =
 
     let getEncoding (encodingName: string) =
         let enc = CodePagesEncodingProvider.Instance.GetEncoding(encodingName)
-        if enc = null then
+        if isNull enc then
             let enc = Encoding.GetEncoding(encodingName)
-            if enc = null then
+            if isNull enc then
                 Encoding.Default
             else
                enc
@@ -244,7 +244,7 @@ module Helper =
 
         let content = File.ReadAllText(xmlFile)
         use sr = new StringReader(content)
-        let xrs = new XmlReaderSettings()
+        let xrs = XmlReaderSettings()
         xrs.ConformanceLevel <- ConformanceLevel.Fragment
         use xr = XmlReader.Create(sr, xrs)
         

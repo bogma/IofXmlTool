@@ -8,7 +8,7 @@ module XmlParser =
     open Types
     open Logging
 
-    let parseResultXml (uri : string) : list<ParsedResult> =
+    let parseResultXml (uri : string) (mappings : EventMapping[]) : list<ParsedResult> =
 
         let getPosition (result : XmlResult.Result) =
             match result.Status with
@@ -24,6 +24,17 @@ module XmlParser =
             match result.Status with
             | "OK" -> result.TimeBehind |> Option.defaultValue 0.0
             | _ -> 0.0
+
+        let map (mType : EventMappingType) (mappings : EventMapping[]) (id : XmlResult.Id) =
+            mappings 
+                |> Array.tryFind (fun x ->
+                                        let from = XmlResult.Id(None, x.From)
+                                        isSame from id && x.Type = mType)
+                |> Option.map (fun x -> XmlResult.Id(None, x.To))
+                |> Option.defaultValue id
+
+        let mapClass = map EventMappingType.Class mappings
+        let mapOrg = map EventMappingType.Organisation mappings
 
         let enc = getXmlEncoding uri |> getEncoding
         let content = File.ReadAllText(uri, enc)
@@ -42,18 +53,20 @@ module XmlParser =
                     | Some c, Some o ->
                         match o.Id with
                         | Some id ->
-                        yield {
-                            ClassId = c;
-                            OrganisationId = id;
-                            GivenName = pr.Person.Name.Given;
-                            FamilyName = pr.Person.Name.Family;
-                            Position = getPosition r;
-                            Time = getTime r;
-                            TimeBehind = getTimeBehind r;
-                            Status = r.Status
-                        }
-                        | None -> ()
-                    | _, _ -> ()]
+                            yield {
+                                ClassId = mapClass c;
+                                OrganisationId = mapOrg id;
+                                GivenName = pr.Person.Name.Given;
+                                FamilyName = pr.Person.Name.Family;
+                                Position = getPosition r;
+                                Time = getTime r;
+                                TimeBehind = getTimeBehind r;
+                                Status = r.Status
+                            }
+                        | None ->
+                            ()
+                    | _, _ ->
+                        ()]
 
     let extractOrganisationInfo uris =
         uris

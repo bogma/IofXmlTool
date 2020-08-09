@@ -55,7 +55,7 @@ let main argv =
     try
         let commandParser = ArgumentParser.Create<Command>(
                                 programName = "iofxtool",
-                                errorHandler = new ProcessExiter(),
+                                errorHandler = ProcessExiter(),
                                 checkStructure = false)
         let args = commandParser.ParseCommandLine(
                                 inputs = argv,

@@ -22,7 +22,7 @@ module PreProcessors =
             let doc = XDocument.Parse(content)
             let json = fromXml doc.Root
             tracer.Info "write JSON %s" outputFile
-            let enc = new UTF8Encoding(false);
+            let enc = UTF8Encoding(false);
             File.WriteAllText(outputFile, json.ToString(), enc)
         else
             tracer.Debug "no need to process JSON %s" inputFile
@@ -34,7 +34,7 @@ module PreProcessors =
             let enc = CodePagesEncodingProvider.Instance.GetEncoding(encName)
             let content = File.ReadAllText(inputFile, enc)
             let doc = XDocument.Parse(content)
-            let xws = new XmlWriterSettings()
+            let xws = XmlWriterSettings()
             xws.Indent <- true
             xws.Encoding <- Encoding.UTF8
             use xw = XmlWriter.Create(inputFile, xws)
@@ -45,59 +45,69 @@ module PreProcessors =
 
     let fromCSV (csvParams : IDictionary<string,string>) (inputFile : string) =
         let outputFile = Path.ChangeExtension(inputFile, "xml")
-        if (isNewer inputFile outputFile) then
-            File.Delete outputFile
-            let res = parseResultCsv csvParams csvParams.["separator"] csvParams.["encoding"] inputFile
-            let grouped = res |> List.groupBy (fun i -> i.ClassId)
 
-            let currentTime = DateTime.UtcNow.ToString("s")
-//            let defaultNS = XTNamespace "http://www.orienteering.org/datastandard/3.0"
-            let doc =
-                XTDocument (XTDeclaration "1.0" "UTF-8" "yes") [
-                    XTElement "ResultList" [
-                        //XTAttribute "xmlns" "http://www.orienteering.org/datastandard/3.0"
-                        //XTAttributeNS "xsi" "xmlns" "http://www.w3.org/2001/XMLSchema-instance"
-                        XTAttribute "iofVersion" "3.0"
-                        XTAttribute "createTime" currentTime
-                        XTAttribute "creator" "IofXmlTool"
-                        for (crId, crList) in grouped do
-                            XTElement "ClassResult" [
-                                XTElement "Class" [
-                                    XTElement "Id" [crId]
-                                    XTElement "Name" [crList.[0].ClassName]
-                                    XTElement "ShortName" [crList.[0].ClassNameShort]
-                                ]
-                                for pr in crList do
-                                    XTElement "PersonResult" [
-                                        XTElement "Person" [
-                                            XTElement "Name" [
-                                                XTElement "Family" pr.FamilyName
-                                                XTElement "Given" pr.GivenName
+        try
+            if (isNewer inputFile outputFile) then
+                let res = parseResultCsv csvParams csvParams.["separator"] csvParams.["encoding"] inputFile
+            
+                let grouped = res |> List.groupBy (fun i -> i.ClassId)
+
+                let currentTime = DateTime.UtcNow.ToString("s")
+
+                let xmlns = XTNamespace "http://www.orienteering.org/datastandard/3.0"
+                let xsins = XTNamespace "http://www.w3.org/2001/XMLSchema-instance"
+                let xsiAttribute = XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance")
+
+                let doc =
+                    XTDocument (XTDeclaration "1.0" "UTF-8" "yes") [
+                        XTElementNS "ResultList" xmlns.NamespaceName [
+                            XTAttribute "xmlns" "http://www.orienteering.org/datastandard/3.0"
+                            xsiAttribute
+                            //XTAttributeNS "xsi" xmlns.NamespaceName "http://www.w3.org/2001/XMLSchema-instance"
+                            XTAttribute "iofVersion" "3.0"
+                            XTAttribute "createTime" currentTime
+                            XTAttribute "creator" "IofXmlTool"
+                            for (crId, crList) in grouped do
+                                XTElementNS "ClassResult" xmlns.NamespaceName [
+                                    XTElementNS "Class" xmlns.NamespaceName [
+                                        XTElementNS "Id" xmlns.NamespaceName [crId]
+                                        XTElementNS "Name" xmlns.NamespaceName [crList.[0].ClassName]
+                                        XTElementNS "ShortName" xmlns.NamespaceName [crList.[0].ClassNameShort]
+                                    ]
+                                    for pr in crList do
+                                        XTElementNS "PersonResult" xmlns.NamespaceName [
+                                            XTElementNS "Person" xmlns.NamespaceName [
+                                                XTElementNS "Name" xmlns.NamespaceName [
+                                                    XTElementNS "Family" xmlns.NamespaceName [pr.FamilyName]
+                                                    XTElementNS "Given" xmlns.NamespaceName [pr.GivenName]
+                                                ]
                                             ]
-                                            XTElement "Organisation" [
-                                                XTElement "Id" [pr.OrganisationId]
-                                                XTElement "Name" pr.OrganisationName
+                                            XTElementNS "Organisation" xmlns.NamespaceName [
+                                                XTElementNS "Id" xmlns.NamespaceName [pr.OrganisationId]
+                                                XTElementNS "Name"xmlns.NamespaceName [pr.OrganisationName]
                                             ]
-                                            XTElement "Result" [
-                                                XTElement "Time" [pr.Time]
-                                                XTElement "Position" [pr.Position]
-                                                XTElement "Status" [pr.Status]
-                                                XTElement "ControlCard" [pr.ControlCard]
+                                            XTElementNS "Result" xmlns.NamespaceName [
+                                                XTElementNS "Time" xmlns.NamespaceName [pr.Time]
+                                                XTElementNS "Position" xmlns.NamespaceName [pr.Position]
+                                                XTElementNS "Status" xmlns.NamespaceName [pr.Status]
+                                                XTElementNS "ControlCard" xmlns.NamespaceName [pr.ControlCard]
                                             ]
                                         ]
-                                    ]
-                            ]
+                                ]
+                        ]
                     ]
-                ]
-             
-            let xws = new XmlWriterSettings()
-            xws.Indent <- true
-            xws.Encoding <- Encoding.UTF8
-            use xw = XmlWriter.Create(outputFile, xws)
-            doc.WriteTo(xw)
+
+                File.Delete outputFile
+                let xws = XmlWriterSettings()
+                xws.Indent <- true
+                xws.Encoding <- Encoding.UTF8
+                use xw = XmlWriter.Create(outputFile, xws)
+                doc.WriteTo(xw)
             
-            tracer.Info "CSV parsed: %d entries" res.Length
-        else
-            tracer.Debug "no need to process CSV %s" inputFile
+                tracer.Info "CSV parsed: %d entries" res.Length
+            else
+                tracer.Debug "no need to process CSV %s" inputFile
+        with
+        | :? System.Exception as ex -> tracer.WarnException ex "parsing %s failed" inputFile
 
 

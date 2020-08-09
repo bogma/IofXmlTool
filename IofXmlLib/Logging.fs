@@ -7,11 +7,11 @@ module Logging =
     open NLog
 
     let configureNLogWithFile (cfgPath: string) =
-        let xmlConfig = new Config.XmlLoggingConfiguration(cfgPath)
+        let xmlConfig = Config.XmlLoggingConfiguration(cfgPath)
         LogManager.Configuration <- xmlConfig
 
     let configureNLog isVerbose isSilent (logFile: string option) wDir =
-        let config = new Config.LoggingConfiguration()
+        let config = Config.LoggingConfiguration()
         match logFile with
         | Some lf ->
             let fn = 
@@ -21,30 +21,30 @@ module Logging =
                     Path.Combine(wDir, lf)
 
             let target = new Targets.FileTarget("file")
-            let layout = new Layouts.SimpleLayout("${longdate} ${level} ${message}")
+            let layout = Layouts.SimpleLayout("${longdate} ${level} ${message}")
             target.Layout <- layout
             target.FileName <- new Layouts.SimpleLayout(fn)
             target.AutoFlush <- true
             let rule =
                 if isVerbose then
-                    new Config.LoggingRule("*",LogLevel.Trace, target)
+                    Config.LoggingRule("*",LogLevel.Trace, target)
                 else
-                    new Config.LoggingRule("*",LogLevel.Info, target)
+                    Config.LoggingRule("*",LogLevel.Info, target)
             config.AddTarget("file", target)
             config.LoggingRules.Add(rule)
         | None -> ()
 
         if not isSilent then
             let target = new Targets.ColoredConsoleTarget()
-            let layout = new Layouts.SimpleLayout("${longdate} ${level} ${message}")
+            let layout = Layouts.SimpleLayout("${longdate} ${level} ${message}")
             target.Layout <- layout
             let rule =
                 if isVerbose then
-                    new Config.LoggingRule("*",LogLevel.Trace, target)
+                    Config.LoggingRule("*",LogLevel.Trace, target)
                 else
-                    new Config.LoggingRule("*",LogLevel.Info, target)
+                    Config.LoggingRule("*",LogLevel.Info, target)
 
-            let layout = new Layouts.SimpleLayout("${message}");
+            let layout = Layouts.SimpleLayout("${message}");
             target.Layout <- layout
 
             config.AddTarget("console", target)
@@ -55,7 +55,7 @@ module Logging =
     /// for nlog config debug purposes
     let printNLogConfig () = 
 
-        let NLogConfigToString () = 
+        let nLogConfigToString () = 
             let targets = LogManager.Configuration.AllTargets
             let out = ""
             let out = Seq.fold (fun out target -> out + (sprintf "%A\n" target)) out targets
@@ -63,7 +63,7 @@ module Logging =
             let out = Seq.fold (fun out rule -> out + (sprintf "%A\n" rule)) out rules
             out
 
-        printfn "%s" (NLogConfigToString ())
+        printfn "%s" (nLogConfigToString ())
 
     
     type ILogger =

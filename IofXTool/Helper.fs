@@ -88,22 +88,35 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
     
     tracer.Info "found the followin events: %A" matchingEvents
 
+    let parseMappings (maps : XmlConfig.Map[]) =
+        [| for m in maps do
+            let t = match m.Type with
+                    | "class" -> Class
+                    | "org" -> Organisation
+                    | _ -> Unknown
+            yield {Type = t; From = m.From; To = m.To } |]
+
     races |> List.map (fun i ->
                             let evCfg = config.Events |> Array.tryFind (fun e -> e.Num = i)
-                            let ev = match evCfg with
-                                     | Some ev ->
-                                        let fName = tryLocateFile dir ev.FileName
-                                        let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, ev.FileName)
-                                        
-                                        {
-                                            FileName = fName |> Option.defaultValue evFile;
-                                            Name = ev.Name |> Option.defaultValue "" ;
-                                            Date = ev.Date |> Option.defaultValue "";
-                                            Number = i;
-                                            Multiply = ev.Multiply |> Option.defaultValue 1.0m;
-                                            Rule = ev.CalcRule
-                                        }
-                                     | None ->
-                                        let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, "")
-                                        {FileName = evFile; Name=""; Date = ""; Number = i; Multiply = 1.0m; Rule = None}
-                            ev)
+                            let evt = match evCfg with
+                                      | Some ev ->
+                                          ev.Maps
+                                          let fName =
+                                              if ev.FileName = "" then
+                                                  let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, ev.FileName)
+                                                  evFile
+                                              else
+                                                  tryLocateFile dir ev.FileName |> Option.defaultValue ev.FileName
+                                          {
+                                              FileName = fName;
+                                              Name = ev.Name |> Option.defaultValue "" ;
+                                              Date = ev.Date |> Option.defaultValue "";
+                                              Number = i;
+                                              Multiply = ev.Multiply |> Option.defaultValue 1.0m;
+                                              Rule = ev.CalcRule;
+                                              Mappings = parseMappings ev.Maps
+                                          }
+                                       | None ->
+                                          let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, "")
+                                          { FileName = evFile; Name=""; Date = ""; Number = i; Multiply = 1.0m; Rule = None; Mappings = Array.empty }
+                            evt)

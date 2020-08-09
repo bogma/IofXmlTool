@@ -73,6 +73,17 @@ module Types =
         Status : string
     }
 
+    type EventMappingType =
+        | Class
+        | Organisation
+        | Unknown
+
+    type EventMapping = {
+        Type : EventMappingType
+        From : string
+        To : string
+    }
+
     type Event = {
         FileName : string
         Name : string
@@ -80,6 +91,7 @@ module Types =
         Date : string
         Multiply : decimal
         Rule : string option
+        Mappings : EventMapping[]
     }
     
     type EventResult = {

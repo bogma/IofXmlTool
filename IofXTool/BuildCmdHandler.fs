@@ -28,7 +28,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
     | Some x ->
         let config = XmlConfig.Load(x)
 
-        let classCfg = config.Classes.Classes |> Array.toList |> List.map (fun x -> { Id = XmlResult.Id(None, string x.Id); Name = x.Name; ShortName = x.DiplayName })
+        let classCfg = config.Classes.Classes |> Array.toList |> List.map (fun x -> { Id = XmlResult.Id(None, string x.Id); Name = x.Name; ShortName = x.ShortName })
         let orgCfg = config.Organisations.Organisations |> Array.toList |> List.map (fun x -> { Id = XmlResult.Id(None, string x.Id); Name = x.Name; ShortName = "" })
 
         let virtualClasses = config.Classes.Combines
@@ -37,7 +37,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                 { 
                                     Id = XmlResult.Id(None, x.ClassIds)
                                     Name = x.Name; 
-                                    ShortName = x.DiplayName;
+                                    ShortName = x.ShortName;
                                     Classes = x.ClassIds.Split[|','|]
                                               |> Array.toList
                                               |> List.map (fun y -> y.Trim())
@@ -99,12 +99,11 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     Status = item.Status;
                 }
 
-//                | CSV -> parseResultCsv config.General.CsvFields config.General.CsvSeparator config.General.CsvEncoding
-
-            let r = parseResultXml eventInfo.FileName
+            let r = parseResultXml eventInfo.FileName eventInfo.Mappings
                     |> filter config.Organisations.Filter (orgCfg |> List.map (fun x -> x.Id)) isSameOrg
                     |> filter config.Classes.Filter (classCfg |> List.map (fun x -> x.Id)) isSameClass
-                    |> Seq.groupBy (fun i -> i.ClassId)
+                    |> List.map (fun a -> { a with ClassId = combineClasses a.ClassId })
+                    |> Seq.groupBy (fun i -> i.ClassId.Value)
                     |> Seq.map (fun (clId, clRes) ->
                                         let validResults = clRes 
                                                             |> Seq.filter (fun x -> x.Status = "OK")
@@ -132,7 +131,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                                                                 Position = 0;
                                                                                 Status = x.Status;
                                                                                 })
-                                        clId, Seq.append (flattenSeqOfSeq res) others)
+                                        XmlResult.Id (None, string clId), Seq.append (flattenSeqOfSeq res) others)
             eventInfo, r
 
         let events = 
@@ -143,7 +142,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 match tryLocateFile cArgs.wDir inputFile with
                 | Some x ->
                     tracer.Info "input file path %s is valid" x
-                    { FileName = x; Name = ""; Number = 1; Date = ""; Multiply = 1.0m; Rule = None} |> Seq.singleton
+                    { FileName = x; Name = ""; Number = 1; Date = ""; Multiply = 1.0m; Rule = None; Mappings = Array.empty } |> Seq.singleton
                 | None ->
                     tracer.Warn "input file not found"
                     Seq.empty
@@ -151,7 +150,9 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 tracer.Error "no valid cup type given. please check your configuration file."
                 Seq.empty
 
-        let validEventInfo (eventInfo:Event) = not (eventInfo.FileName = "")
+        let validEventInfo (eventInfo:Event) =
+            File.Exists(eventInfo.FileName) &&
+            Path.GetExtension(eventInfo.FileName) = ".xml"
 
         config.PreProcessing.Tasks
             |> Array.filter(fun x -> x.Name = "fromCSV")
@@ -185,6 +186,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let _, catId, prr =
                                             r
                                             |> Seq.take 1
+
                                             |> Seq.exactlyOne
                                         let countingResults =
                                             r
@@ -194,9 +196,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                             r
                                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
                                             |> Seq.mapi (fun i (a, b, c) -> 
-                                                            let counts =
-                                                                if i < config.General.TakeBest then true
-                                                                else false
+                                                            let counts = i < config.General.TakeBest
                                                             { EventDetails = a; ClassId = b; PRR = c; ResultCounts = counts; })
                                         let sum = 
                                             countingResults
@@ -233,10 +233,10 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                         |> flattenSeqOfSeq
                 Some (SumResult v)
             | "Team" ->
-                let r = parseResultXml (competitions |> Seq.head)
+                let r = parseResultXml (competitions |> Seq.head) Array.empty
                         |> filter config.Organisations.Filter (orgCfg |> List.map (fun x -> x.Id)) isSameOrg
                         |> filter config.Classes.Filter (classCfg |> List.map (fun x -> x.Id)) isSameClass
-                        |> List.map (fun a -> { ClassId = combineClasses a.ClassId; OrganisationId = a.OrganisationId; GivenName = a.GivenName; FamilyName = a.FamilyName; Position = a.Position; Time = a.Time; TimeBehind = a.TimeBehind; Status = a.Status })
+                        |> List.map (fun pr -> { pr with ClassId = combineClasses pr.ClassId })
                         |> Seq.filter (fun x -> x.Status = "OK")
                         |> Seq.groupBy (fun i -> i.ClassId)
                         |> Seq.map (fun (clId, clRes) ->
@@ -266,7 +266,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 ClassInfo = classInfos @ virtualClassIdNameInfo;
                 OrgCfg = orgCfg;
                 OrgInfo = orgInfos;
-                Result = r
+                Result = r;
             }
 
             checkNameTypos data
