@@ -86,7 +86,7 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
                                                           | Regex config.General.ResultFileRegex [evNum] -> Some (int evNum, x)
                                                           | _ -> None)
     
-    tracer.Info "found the followin events: %A" matchingEvents
+    tracer.Info "found the followin events matching the regex pattern: %A" matchingEvents
 
     let parseMappings (maps : XmlConfig.Map[]) =
         [| for m in maps do
@@ -100,7 +100,6 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
                             let evCfg = config.Events |> Array.tryFind (fun e -> e.Num = i)
                             let evt = match evCfg with
                                       | Some ev ->
-                                          ev.Maps
                                           let fName =
                                               if ev.FileName = "" then
                                                   let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, ev.FileName)

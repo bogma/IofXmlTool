@@ -150,16 +150,17 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 tracer.Error "no valid cup type given. please check your configuration file."
                 Seq.empty
 
-        let validEventInfo (eventInfo:Event) =
-            File.Exists(eventInfo.FileName) &&
-            Path.GetExtension(eventInfo.FileName) = ".xml"
+
 
         config.PreProcessing.Tasks
-            |> Array.filter(fun x -> x.Name = "fromCSV")
+            |> Array.filter(fun x -> x.Name = "fromCSV" && x.Active)
             |> Array.iter(fun x ->
                 let csvResultFiles = getFiles cArgs.wDir config.General.ResultFileRegex "*.csv" config.General.RecurseSubDirs
                 let csvParams : IDictionary<string,string> = x.Params |> Array.map (fun x -> x.Key, x.Value) |> Array.toSeq |> dict
                 csvResultFiles |> Seq.iter (fromCSV csvParams))
+
+        let validEventInfo (eventInfo:Event) =
+            File.Exists(eventInfo.FileName) && Path.GetExtension(eventInfo.FileName) = ".xml"
 
         let competitions = events
                             |> Seq.filter validEventInfo

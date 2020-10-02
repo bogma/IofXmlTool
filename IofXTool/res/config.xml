@@ -7,7 +7,6 @@
            calcRule="rule_name"
            resultFileRegex="SC_\d{2}_2020"
            recurseSubDirs="false"
-           convertToJson="false"
            includeStatus="DidNotFinish,MissingPunch"
            eventTitle="Sbg.Cup">
   </General>

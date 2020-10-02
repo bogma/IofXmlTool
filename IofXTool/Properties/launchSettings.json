@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "ResultHelper": {
+    "Debug SbgCup": {
       "commandName": "Project",
-      "commandLineArgs": "build --working-directory \"C:\\OL\\events\\2020\\skiol\""
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2019\\sbgcup\""
+    },
+    "Debug Sprint": {
+      "commandName": "Project",
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2019\\sbgcup\" --config-file \"lms_sprint_config.xml\""
     }
   }
 }
