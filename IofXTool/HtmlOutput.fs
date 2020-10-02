@@ -207,6 +207,7 @@ let buildResultHtml data =
 
                         yield init
                             |> add "events" [1..data.Config.General.NumberOfEvents]
+                            |> add "eventInfos" (sr |> Seq.head).EventInfos
                             |> add "classFullName" cName
                             |> add "classShortName" cShort
                             |> add "hasShortName" (cShort.Length > 0)
