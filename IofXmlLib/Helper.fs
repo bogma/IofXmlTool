@@ -92,11 +92,18 @@ module Helper =
             else
                 TimeSpan.FromSeconds(time).ToString(fmt)
 
-        match trimOptions with
-        | Start -> fmtTime.TrimStart(' ',':','0')
-        | End -> fmtTime.TrimEnd('.', '0')
-        | Both -> fmtTime.TrimStart(' ',':','0').TrimEnd('.')
-            
+        let trimmedTime = match trimOptions with
+                          | Start -> fmtTime.TrimStart(' ',':','0')
+                          | End -> fmtTime.TrimEnd('.', '0')
+                          | Both -> fmtTime.TrimStart(' ',':','0').TrimEnd('.')
+
+        if (time < 60.0) then
+            if (time < 10.0) then
+                sprintf "0:0%s" trimmedTime
+            else
+                sprintf "0:%s" trimmedTime
+        else
+            trimmedTime
 
     let formatSeconds2Time time =
         let f = floor time
