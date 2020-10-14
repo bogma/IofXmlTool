@@ -5,8 +5,8 @@ open IofXmlLib.Helper
 open IofXmlLib.Calc
 open IofXmlLib.Logging
 
-open Types
 open Helper
+open Types
 
 open Fue.Compiler
 open Fue.Data
@@ -80,25 +80,10 @@ let buildResultHtml data =
                 |> Seq.map(fun (x,_) -> x)
                 |> Seq.toList
 
-            let classWeight =
-                if data.Config.Classes.PresentationOrder = "" then
-                    List.Empty
-                else
-                    data.Config.Classes.PresentationOrder.Split[|','|]
-                    |> Array.toList
-                    |> List.map (fun y -> y.Trim())
-                    |> List.map (fun y -> XmlResult.Id(None, y))
-                    |> List.filter (fun x -> classList |> List.exists (fun y -> isSame y x))
-
-            let unsortedClassList =
-                classList
-                |> List.filter(fun x -> classWeight |> List.exists(fun y -> isSame y x) |> not)
-
-            let orderdClassList =
-                classWeight @ unsortedClassList
+            let orderedClassList = getOrderedClassList classList data.Config.Classes.PresentationOrder
 
             let catRes =
-                [ for cl in orderdClassList do
+                [ for cl in orderedClassList do
                     let i, catResult = classResults |> Seq.find(fun (catId, _) -> isSame catId cl)
                     let finalCatRes = recalcCupPositions catResult
                     let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i

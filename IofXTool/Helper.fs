@@ -119,3 +119,21 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
                                           let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, "")
                                           { FileName = evFile; Name=""; Date = ""; Number = i; Multiply = 1.0m; Rule = None; Mappings = Array.empty }
                             evt)
+
+let getOrderedClassList classList presentationOrder = 
+
+    let classWeight =
+        if presentationOrder = "" then
+            List.Empty
+        else
+            presentationOrder.Split[|','|]
+            |> Array.toList
+            |> List.map (fun y -> y.Trim())
+            |> List.map (fun y -> XmlResult.Id(None, y))
+            |> List.filter (fun x -> classList |> List.exists (fun y -> isSame y x))
+
+    let unsortedClassList =
+        classList
+        |> List.filter(fun x -> classWeight |> List.exists(fun y -> isSame y x) |> not)
+
+    classWeight @ unsortedClassList
