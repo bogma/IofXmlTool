@@ -2,7 +2,7 @@
   "profiles": {
     "Debug SbgCup": {
       "commandName": "Project",
-      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2019\\sbgcup\""
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2020\\sbgcup\""
     },
     "Debug Sprint": {
       "commandName": "Project",
