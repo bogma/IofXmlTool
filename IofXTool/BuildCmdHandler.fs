@@ -17,7 +17,8 @@ open Helper
 open Commands
 open HtmlOutput
 open Newtonsoft.Json
-open SelectPdf
+open PdfSharpCore
+open TheArtOfDev.HtmlRenderer.PdfSharp
 open System.Collections.Generic
 
 let build (cArgs:CommonArgs) (args : ParseResults<_>) =
@@ -277,31 +278,34 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 buildResultHtml data |> ignore
 
             if config.Output.Pdf.Active then
-                let converter = new SelectPdf.HtmlToPdf();
+                if not config.Output.Html.Active then
+                    tracer.Warn "PDF output can only be built upon HTML output - please activate html output"
+                else
+                    // apply PDF options
+                    let pdfConfig = PdfGenerateConfig()
 
-                // set converter options
-                let pdfOptions = data.Config.Output.Pdf
-                match pdfOptions.PageSize with
-                | "A3" -> converter.Options.PdfPageSize <- PdfPageSize.A3
-                | "A4" -> converter.Options.PdfPageSize <- PdfPageSize.A4
-                | "A5" -> converter.Options.PdfPageSize <- PdfPageSize.A5
-                | _ -> converter.Options.PdfPageSize <- PdfPageSize.A4
+                    let pdfOptions = data.Config.Output.Pdf
+                    match pdfOptions.PageSize with
+                    | "A3" -> pdfConfig.PageSize <- PageSize.A3
+                    | "A4" -> pdfConfig.PageSize <- PageSize.A4
+                    | "A5" -> pdfConfig.PageSize <- PageSize.A5
+                    | _ -> pdfConfig.PageSize <- PageSize.A4
 
-                match pdfOptions.PageOrientation with
-                | "Landscape" -> converter.Options.PdfPageOrientation <- PdfPageOrientation.Landscape
-                | _ -> converter.Options.PdfPageOrientation <- PdfPageOrientation.Portrait
+                    match pdfOptions.PageOrientation with
+                    | "Landscape" -> pdfConfig.PageOrientation <- PageOrientation.Landscape
+                    | _ -> pdfConfig.PageOrientation <- PageOrientation.Portrait
 
-                converter.Options.MarginLeft <- pdfOptions.MarginLeft
-                converter.Options.MarginRight <- pdfOptions.MarginRight
-                converter.Options.MarginTop <- pdfOptions.MarginTop
-                converter.Options.MarginBottom <- pdfOptions.MarginBottom
+                    pdfConfig.MarginLeft <- pdfOptions.MarginLeft
+                    pdfConfig.MarginRight <- pdfOptions.MarginRight
+                    pdfConfig.MarginTop <- pdfOptions.MarginTop
+                    pdfConfig.MarginBottom <- pdfOptions.MarginBottom
 
-                let htmlInputFile = Path.Combine(data.InputPath, data.Config.Output.Html.FileName)
-                let doc = converter.ConvertUrl(htmlInputFile);
-                let outputFile = Path.Combine(data.InputPath, data.Config.Output.Pdf.FileName)
-                doc.Save(outputFile)
-                doc.Close()
-                tracer.Info "PDF output written to %s" outputFile
+                    let htmlInputFile = Path.Combine(data.InputPath, data.Config.Output.Html.FileName)
+                    let outputFile = Path.Combine(data.InputPath, data.Config.Output.Pdf.FileName)
+
+                    let doc = PdfGenerator.GeneratePdf(File.ReadAllText(htmlInputFile), pdfConfig);
+                    doc.Save(outputFile)
+                    tracer.Info "PDF output written to %s" outputFile
 
             if config.Type = "Cup" && config.Output.Json.Active then
                 let outputFile = Path.Combine(cArgs.wDir, config.Output.Json.FileName)

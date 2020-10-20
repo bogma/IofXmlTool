@@ -10,9 +10,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="datastandard_IOF_30.xsd" />
     <None Include="res\ResultListSampleData.csv" />
-    <Content Include="res\config.xml">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Content>
     <Content Include="res\ResultListSampleData.html" />
     <EmbeddedResource Include="res\ResultListSampleData.xml" />
     <Compile Include="Types.fs" />

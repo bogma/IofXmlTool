@@ -1,5 +1,6 @@
-<!-- supported types: Team, Cup, Sum-->
+<!-- supported types: Team, Cup, Sum -->
 <Configuration type="Cup">
+  <!-- showEvents: All, OmitEmpty, OmitMissing -->
   <General name="Sportvogl Cup 2016"
            year="2016"
            numberOfEvents="9"
@@ -8,7 +9,8 @@
            resultFileRegex="SC_\d{2}_2020"
            recurseSubDirs="false"
            includeStatus="DidNotFinish,MissingPunch"
-           eventTitle="Sbg.Cup">
+           eventTitle="Sbg.Cup"
+           showEvents="All">
   </General>
   <PreProcessing>
     <!-- options for input file preprocessing -->
