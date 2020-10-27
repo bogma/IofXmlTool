@@ -1,6 +1,6 @@
 <!-- supported types: Team, Cup, Sum -->
 <Configuration type="Cup">
-  <!-- showEvents: All, OmitEmpty, OmitMissing -->
+  <!-- showEvents: All, OmitAllMissing, OmitTailMissing -->
   <General name="Sportvogl Cup 2016"
            year="2016"
            numberOfEvents="9"

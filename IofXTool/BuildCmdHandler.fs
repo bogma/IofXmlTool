@@ -176,6 +176,12 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     | "toUtf8" -> competitions |> Seq.iter toUtf8
                     | _ -> tracer.Warn "preprocessing option %s is not supported" x.Name)
 
+        let events = 
+            match config.General.ShowEvents with
+            | "OmitTailMissing" -> events |> Seq.sortByDescending (fun x -> x.Number) |> Seq.skipWhile (fun x -> not (validEventInfo x)) |> Seq.sortBy (fun x -> x.Number)
+            | "OmitAllMissing" -> events |> Seq.filter validEventInfo
+            | _ -> events
+
         let res = 
             match config.Type with
             | "Cup" ->
@@ -188,7 +194,6 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let _, catId, prr =
                                             r
                                             |> Seq.take 1
-
                                             |> Seq.exactlyOne
                                         let countingResults =
                                             r
@@ -259,8 +264,8 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
         | Some r ->
             let orgInfos = extractOrganisationInfo competitions |> Seq.toList
             let classInfos = extractClassInfo competitions |> Seq.toList
-
             let virtualClassIdNameInfo = virtualClasses |> List.map (fun x -> { Id = x.Id; Name = x.Name; ShortName = x.ShortName })
+            
             let data = {
                 InputPath = cArgs.wDir;
                 Config= config;
