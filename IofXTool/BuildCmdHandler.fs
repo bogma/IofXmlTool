@@ -303,7 +303,13 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     let htmlInputFile = Path.Combine(data.InputPath, data.Config.Output.Html.FileName)
                     let outputFile = Path.Combine(data.InputPath, data.Config.Output.Pdf.FileName)
 
+                    // disable logging of PdfSharpCore nuget package
+                    let consoleOut = Console.Out
+                    Console.SetOut(TextWriter.Null)
                     let doc = PdfGenerator.GeneratePdf(File.ReadAllText(htmlInputFile), pdfConfig);
+                    
+                    // enable logging again
+                    Console.SetOut(consoleOut)
                     doc.Save(outputFile)
                     tracer.Info "PDF output written to %s" outputFile
 
