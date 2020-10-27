@@ -27,6 +27,27 @@ let getStatusText (translations : XmlConfig.Translation []) (s:string) =
 
 let formatTime = sprintfTime "%h\:mm\:ss\.F" TrimOptions.Both
 
+let rowDetailsPrinter (events:Event list) (config:XmlConfig.Configuration) (rule:CalculationRule option) (results:seq<EventResult>) (template:string) =
+    let races = events |> List.map (fun e -> e.Number) |> List.sort
+    [ for r in races do
+         let p = results |> Seq.filter (fun eventResult -> eventResult.EventDetails.Number = r)
+         if Seq.isEmpty p then
+              yield "<td/>"
+         else 
+              let eRes = p |> Seq.take 1 |> Seq.exactlyOne
+              let points = rule |> Option.map (fun r -> r.FormatPoints eRes.PRR.Points) |> Option.defaultValue ""
+               
+              yield init
+                    |> add "isStatusOk" (eRes.PRR.Status = "OK")
+                    |> add "isResultCounting" eRes.ResultCounts
+                    |> add "points" points
+                    |> add "timeBehind" eRes.PRR.TimeBehind
+                    |> add "time" eRes.PRR.Time
+                    |> add "pos" eRes.PRR.Position
+                    |> add "statusText" (getStatusText config.Translations eRes.PRR.Status)
+                    |> add "fnFormatTime" formatTime
+                    |> fromFile template]
+
 let buildResultHtml data =
 
     let cssFile = Path.Combine(data.InputPath, data.Config.Output.Html.CssFile)
@@ -104,27 +125,13 @@ let buildResultHtml data =
                             | None -> data.Config.General.CalcRule
                         | None -> data.Config.General.CalcRule
                     let strategy = getCalcStrategy rule
-
-                    let printDetailedResultRow (results : seq<EventResult>) (template:string) =
-                        [ for r in [1..data.Config.General.NumberOfEvents] do
-                                let p = results |> Seq.filter (fun eventResult -> eventResult.EventDetails.Number = r)
-                                if Seq.isEmpty p then
-                                    yield "<td/>"
-                                else 
-                                    let eRes = p |> Seq.take 1 |> Seq.exactlyOne
-                                    yield init
-                                        |> add "statusOk" (eRes.PRR.Status = "OK")
-                                        |> add "resultCounts" eRes.ResultCounts
-                                        |> add "points" (strategy.FormatPoints eRes.PRR.Points)
-                                        |> add "time" (formatSeconds2Time eRes.PRR.Time)
-                                        |> add "pos" eRes.PRR.Position
-                                        |> add "status" (getStatusText data.Config.Translations eRes.PRR.Status)
-                                        |> fromFile template ]
+                    let eventInfos = (cr |> Seq.head).EventInfos
+                    let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config (Some strategy)
 
                     yield init
                         |> add "events" [1..data.Config.General.NumberOfEvents]
                         |> add "generalEventTitle" data.Config.General.EventTitle
-                        |> add "eventInfos" (cr |> Seq.head).EventInfos
+                        |> add "eventInfos" eventInfos
                         |> add "classFullName" cName
                         |> add "classShortName" cShort
                         |> add "hasShortName" (cShort.Length > 0)
@@ -172,27 +179,12 @@ let buildResultHtml data =
                             cName
 
                         let isWinner rank = rank = 1
-                        let printDetailedResultRow (results : seq<EventResult>) (template:string) =
-                            let races = [1..data.Config.General.NumberOfEvents] // |> List.map (fun i -> (data.Config.General.ResultFilePrefix) + i.ToString("D2") + "_" + (data.Config.General.Year).ToString())
-                            [ for r in races do
-                                 let p = results |> Seq.filter (fun eventResult -> eventResult.EventDetails.Number = r)
-                                 if Seq.isEmpty p then
-                                      yield "<td/>"
-                                 else 
-                                      let eRes = p |> Seq.take 1 |> Seq.exactlyOne
-                                      yield init
-                                            |> add "isStatusOk" (eRes.PRR.Status = "OK")
-                                            |> add "isResultTaken" eRes.ResultCounts
-                                            |> add "timeBehind" eRes.PRR.TimeBehind
-                                            |> add "time" eRes.PRR.Time
-                                            |> add "pos" eRes.PRR.Position
-                                            |> add "status" (getStatusText data.Config.Translations eRes.PRR.Status)
-                                            |> add "formatTime" formatTime
-                                            |> fromFile template]
+                        let eventInfos = (sr |> Seq.head).EventInfos
+                        let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config None
 
                         yield init
                             |> add "events" [1..data.Config.General.NumberOfEvents]
-                            |> add "eventInfos" (sr |> Seq.head).EventInfos
+                            |> add "eventInfos" eventInfos
                             |> add "classFullName" cName
                             |> add "classShortName" cShort
                             |> add "hasShortName" (cShort.Length > 0)
