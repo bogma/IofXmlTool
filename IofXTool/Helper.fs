@@ -75,7 +75,7 @@ let tryLocateFile (wDir:string) (f:string) =
                 None
 
 let getEventInfos (config:XmlConfig.Configuration) dir =
-    let races = [1..config.General.NumberOfEvents]
+    let races = [1..config.General.NumberOfPlannedEvents]
 
     tracer.Debug "searching for events matching the regex: %s (subdirs include: %b)" config.General.ResultFileRegex config.General.RecurseSubDirs
 
@@ -86,7 +86,7 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
                                                           | Regex config.General.ResultFileRegex [evNum] -> Some (int evNum, x)
                                                           | _ -> None)
     
-    tracer.Info "found the followin events matching the regex pattern: %A" matchingEvents
+    tracer.Info "found the following events matching the regex pattern: %A" matchingEvents
 
     let parseMappings (maps : XmlConfig.Map[]) =
         [| for m in maps do

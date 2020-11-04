@@ -106,7 +106,10 @@ let buildResultHtml data =
             let catRes =
                 [ for cl in orderedClassList do
                     let i, catResult = classResults |> Seq.find(fun (catId, _) -> isSame catId cl)
-                    let finalCatRes = recalcCupPositions catResult
+                    let finalCatRes = 
+                        match data.Config.General.ShowCompetitors with
+                        | n when n > 0 -> recalcCupPositions catResult |> Seq.takeWhile (fun (x, _) -> x <= n)
+                        | _ -> recalcCupPositions catResult
                     let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i
                     let getOrgNameById id = 
                         let cName, _ = getNamesById data.OrgCfg data.OrgInfo "Unknown Club" id
@@ -129,7 +132,7 @@ let buildResultHtml data =
                     let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config (Some strategy)
 
                     yield init
-                        |> add "events" [1..data.Config.General.NumberOfEvents]
+                        |> add "events" [1..data.Config.General.NumberOfValidEvents]
                         |> add "generalEventTitle" data.Config.General.EventTitle
                         |> add "eventInfos" eventInfos
                         |> add "classFullName" cName
@@ -149,8 +152,8 @@ let buildResultHtml data =
                 |> add "inline" data.Config.Output.Html.CssInline
                 |> add "cssContent" cssContent
                 |> add "title" data.Config.General.Name
-                |> add "takeBest" data.Config.General.TakeBest
-                |> add "numberOfEvents" data.Config.General.NumberOfEvents
+                |> add "takeBest" data.Config.General.NumberOfCountingEvents
+                |> add "numberOfEvents" data.Config.General.NumberOfValidEvents
                 |> add "year" DateTime.Now.Year
                 |> add "date" creationDate
                 |> add "catResult" catRes
@@ -172,7 +175,11 @@ let buildResultHtml data =
                                            |> Seq.find(fun (catId, _) -> isSame catId cfg.Id)
                         let invalid = catResult |> Seq.filter (fun x -> x.Disq) |> Seq.map (fun x -> 0, x)
                         let valid = recalcSumPositions catResult
-                        let cr = Seq.append valid invalid
+                        let cr =
+                            match data.Config.General.ShowCompetitors with
+                            | n when n > 0 -> valid |> Seq.takeWhile (fun (x, _) -> x <= n)
+                            | _ -> Seq.append valid invalid
+                        
                         let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i
                         let getOrgNameById id = 
                             let cName, _ = getNamesById data.OrgCfg data.OrgInfo "Unknown Club" id
@@ -183,7 +190,7 @@ let buildResultHtml data =
                         let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config None
 
                         yield init
-                            |> add "events" [1..data.Config.General.NumberOfEvents]
+                            |> add "events" [1..data.Config.General.NumberOfValidEvents]
                             |> add "eventInfos" eventInfos
                             |> add "classFullName" cName
                             |> add "classShortName" cShort
@@ -203,8 +210,8 @@ let buildResultHtml data =
                 |> add "inline" data.Config.Output.Html.CssInline
                 |> add "cssContent" cssContent
                 |> add "title" data.Config.General.Name
-                |> add "takeBest" data.Config.General.TakeBest
-                |> add "numberOfEvents" data.Config.General.NumberOfEvents
+                |> add "takeBest" data.Config.General.NumberOfCountingEvents
+                |> add "numberOfEvents" data.Config.General.NumberOfValidEvents
                 |> add "year" DateTime.Now.Year
                 |> add "date" creationDate
                 |> add "catResult" catRes

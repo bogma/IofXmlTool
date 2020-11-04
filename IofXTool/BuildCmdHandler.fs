@@ -198,12 +198,12 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let countingResults =
                                             r
                                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
-                                            |> Seq.truncate config.General.TakeBest
+                                            |> Seq.truncate config.General.NumberOfCountingEvents
                                         let x =
                                             r
                                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
                                             |> Seq.mapi (fun i (a, b, c) -> 
-                                                            let counts = i < config.General.TakeBest
+                                                            let counts = i < config.General.NumberOfCountingEvents
                                                             { EventDetails = a; ClassId = b; PRR = c; ResultCounts = counts; })
                                         let sum = 
                                             countingResults
@@ -221,7 +221,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let sum = r |> Seq.sumBy (fun (_, _, prr) -> prr.Points) |> float
                                         let x = r |> Seq.map (fun (a, b, c) -> { EventDetails = a; ClassId = b; PRR = c; ResultCounts = true; })
                                         let eventsOk = x |> Seq.filter (fun i -> i.PRR.Status = "OK") |> Seq.length
-                                        let disq = not (eventsOk = config.General.NumberOfEvents)
+                                        let disq = not (eventsOk = config.General.NumberOfValidEvents)
                                         { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalTime = sum; TimeBehind = 0.0; Disq = disq; Results = x; EventInfos = events |> Seq.toList })
                         |> Seq.groupBy (fun x -> x.ClassId)
                         |> Seq.map (fun (_, clRes) -> 

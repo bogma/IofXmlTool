@@ -3,14 +3,16 @@
   <!-- showEvents: All, OmitAllMissing, OmitTailMissing -->
   <General name="Sportvogl Cup 2016"
            year="2016"
-           numberOfEvents="9"
-           takeBest="6"
+           numberOfPlannedEvents="9"
+           numberOfValidEvents="7"
+           numberOfCountingEvents="4"
            calcRule="rule_name"
            resultFileRegex="SC_\d{2}_2020"
            recurseSubDirs="false"
            includeStatus="DidNotFinish,MissingPunch"
            eventTitle="Sbg.Cup"
-           showEvents="All">
+           showEvents="All"
+           showCompetitors="-1">
   </General>
   <PreProcessing>
     <!-- options for input file preprocessing -->
