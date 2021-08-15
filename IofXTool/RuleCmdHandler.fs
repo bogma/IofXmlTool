@@ -30,6 +30,16 @@ let rules (cArgs: CommonArgs) (args: ParseResults<_>) =
                 let n = s.RuleName
                 let fm = s.RuleFormat
                 tracer.Info "Name: %s, Format: %s" n fm
+            | None ->
+                tracer.Info "No info for '%s' found in CalcLib." x)
+    | ListDetails ->
+        let infos = getNames None
+        infos |> List.iter (fun x -> 
+            match getCalcStrategy x with
+            | Some s ->
+                let n = s.RuleName
+                let fm = s.RuleFormat
+                tracer.Info "Name: %s, Format: %s" n fm
                 tracer.Info "%s" s.RuleCode
             | None ->
                 tracer.Info "No info for '%s' found in CalcLib." x)

@@ -25,7 +25,6 @@ module Calc =
         member this.Execute (winningTime:decimal) (runnersTime:decimal) (racePosition:int) = calcFunction winningTime runnersTime racePosition
         member this.FormatPoints (points:decimal) = sprintf format points
         member this.RuleName = ruleDefinition.Name
-        member this.RuleFunction = ruleDefinition.Code.Substring(4, ruleDefinition.Code.IndexOf(" ", 4) - 4)
         member this.RuleFormat = ruleDefinition.Formatting
         member this.RuleCode = ruleDefinition.Code
 """

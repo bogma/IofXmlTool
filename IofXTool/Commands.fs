@@ -47,6 +47,7 @@ with
 type RuleAction =
     | Compile
     | List
+    | ListDetails
     | ListFunctions
     | RestoreDefault
 
