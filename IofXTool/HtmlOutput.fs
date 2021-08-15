@@ -129,8 +129,11 @@ let buildResultHtml data =
                         | None -> data.Config.General.CalcRule
                     let strategy = getCalcStrategy rule
                     let eventInfos = (cr |> Seq.head).EventInfos
-                    let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config (Some strategy)
-
+                    let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config strategy
+                    let format =
+                        match strategy with
+                        | Some x -> x.FormatPoints
+                        | None -> sprintf "%2f"
                     yield init
                         |> add "events" [1..data.Config.General.NumberOfValidEvents]
                         |> add "generalEventTitle" data.Config.General.EventTitle
@@ -141,7 +144,7 @@ let buildResultHtml data =
                         |> add "catResults" finalCatRes
                         |> add "getRowStyle" getRowStyle
                         |> add "getClubNameById" getOrgNameById
-                        |> add "format" strategy.FormatPoints
+                        |> add "format" format
                         |> add "printDetailedResultRow" printDetailedResultRow
                         |> add "templateFile" detailsTemplateFile
                         |> add "combineListToString" combineListToString

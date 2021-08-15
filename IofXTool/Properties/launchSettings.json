@@ -2,11 +2,23 @@
   "profiles": {
     "Debug SbgCup": {
       "commandName": "Project",
-      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2020\\sbgcup\""
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2021\""
+    },
+    "Debug AustriaCup": {
+      "commandName": "Project",
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\AC2021\""
     },
     "Debug Sprint": {
       "commandName": "Project",
       "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2019\\sbgcup\" --config-file \"lms_sprint_config.xml\""
+    },
+    "Debug Rules List": {
+      "commandName": "Project",
+      "commandLineArgs": "rules -a List"
+    },
+    "Debug Rules Compile": {
+      "commandName": "Project",
+      "commandLineArgs": "rules -a Compile"
     }
   }
 }

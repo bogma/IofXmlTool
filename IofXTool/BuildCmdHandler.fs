@@ -85,10 +85,15 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                             | None -> config.General.CalcRule
                         | None -> config.General.CalcRule
                 let strategy = getCalcStrategy rule
-                let points = 
-                    if (item.Status = "OK") then
-                        strategy.Execute winningTime (decimal item.Time) i * eventInfo.Multiply
-                    else
+                let points =
+                    match strategy with
+                    | Some s ->
+                        if (item.Status = "OK") then
+                            s.Execute winningTime (decimal item.Time) i * eventInfo.Multiply
+                        else
+                            0m
+                    | None ->
+                        tracer.Error "Calculation strategy '%s' not found." rule
                         0m
                 { 
                     OrganisationId = item.OrganisationId;
@@ -150,8 +155,6 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
             | _ -> 
                 tracer.Error "no valid cup type given. please check your configuration file."
                 Seq.empty
-
-
 
         config.PreProcessing.Tasks
             |> Array.filter(fun x -> x.Name = "fromCSV" && x.Active)

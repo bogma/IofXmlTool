@@ -2,6 +2,7 @@
 
 open System.Reflection
 
+open IofXmlLib.Calc
 open IofXmlLib.CalcLibBuilder
 open IofXmlLib.Logging
 
@@ -22,14 +23,25 @@ let rules (cArgs: CommonArgs) (args: ParseResults<_>) =
         | None ->
             tracer.Warn "rule file not found"
     | List ->
+        let infos = getNames None
+        infos |> List.iter (fun x -> 
+            match getCalcStrategy x with
+            | Some s ->
+                let n = s.RuleName
+                let fm = s.RuleFormat
+                tracer.Info "Name: %s, Format: %s" n fm
+                tracer.Info "%s" s.RuleCode
+            | None ->
+                tracer.Info "No info for '%s' found in CalcLib." x)
+    | ListFunctions ->
         let staticFlags = BindingFlags.NonPublic ||| BindingFlags.Public ||| BindingFlags.Static 
         let asm = Assembly.Load("CalcLib")
         let calc = asm.GetType("IofXmlLib.Calc")
         let methods = calc.GetMethods(staticFlags)
         methods 
-        |> Array.filter (fun m -> not (m.Name.Equals("getCalcStrategy")))
+        |> Array.filter (fun m -> not (m.Name.StartsWith("get")))
         |> Array.iter (fun m -> tracer.Info "%s" m.Name)
     | RestoreDefault ->
         restoreDefaultCalcLib
-    
+
     ()
