@@ -57,7 +57,7 @@ let buildResultHtml data =
     let cssContent = File.ReadAllText(cssFile)
     let creationDate = System.DateTime.Now.ToString("R")
 
-    let html = 
+    let html =
         match data.Result with
         | TeamResult tr ->
             let catRes = tr 

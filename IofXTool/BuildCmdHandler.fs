@@ -16,12 +16,14 @@ open Types
 open Helper
 open Commands
 open HtmlOutput
+open PostProcessingTasks
 open Newtonsoft.Json
 open PdfSharpCore
 open TheArtOfDev.HtmlRenderer.PdfSharp
 open System.Collections.Generic
 
 let build (cArgs:CommonArgs) (args : ParseResults<_>) =
+
     let configFile = tryLocateFile cArgs.wDir cArgs.cfgFile
     match configFile with
     | None -> ()
@@ -332,5 +334,18 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 File.WriteAllText(outputFile, json, Text.Encoding.UTF8)
                 tracer.Info "JSON output written to %s" outputFile
 
+            config.PostProcessing.Tasks
+                |> Array.filter (fun x -> x.Active)
+                |> Array.iter (fun x -> 
+                        match x.Name with
+                        | "dummy" -> ()
+                        | "sumOrganisations" ->
+                            let taskParams : IDictionary<string,string> =
+                                x.Params
+                                |> Array.map (fun x -> x.Key, x.Value)
+                                |> Array.toSeq
+                                |> dict
+                            sumOrganisations taskParams data
+                        | _ -> tracer.Warn "postprocessing option '%s' is not supported" x.Name)
             ()
         | None -> ()

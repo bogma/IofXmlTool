@@ -24,6 +24,7 @@
     <Compile Include="Types.fs" />
     <Compile Include="Helper.fs" />
     <Compile Include="HtmlOutput.fs" />
+    <Compile Include="PostProcessingTasks.fs" />
     <Compile Include="BuildCmdHandler.fs" />
     <Compile Include="RuleCmdHandler.fs" />
     <Compile Include="CommandHandlers.fs" />

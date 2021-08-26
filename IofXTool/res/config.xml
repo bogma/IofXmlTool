@@ -35,6 +35,18 @@
     <Task name="toUtf8" sequence="2" active="true" />
     <Task name="toJson" sequence="3" active="true" />
   </PreProcessing>
+  <PostProcessing>
+    <!-- options for result postprocessing -->
+    <Task name="sumOrganisations" sequence="1" active="true">
+      <Param key="outputPrefix">Vereine</Param>
+      <!-- sumType: all ... sum up all points from competitors -->
+      <!-- sumType: cup ... sum up cup points from competitors -->
+      <Param key="sumType">all</Param>
+    </Task>
+    <Task name="dummy" sequence="2" active="false">
+      <!-- dummy task needed to declare Tasks array -->
+    </Task>
+  </PostProcessing>
   <Events>
     <!-- set num to 0 if not needed -->
     <Event num="1" date="1. Juli 1994" name="Chicken Tag 1" fileName="">
