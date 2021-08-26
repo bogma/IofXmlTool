@@ -22,7 +22,6 @@ open TheArtOfDev.HtmlRenderer.PdfSharp
 open System.Collections.Generic
 
 let build (cArgs:CommonArgs) (args : ParseResults<_>) =
-    
     let configFile = tryLocateFile cArgs.wDir cArgs.cfgFile
     match configFile with
     | None -> ()
@@ -156,28 +155,34 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 tracer.Error "no valid cup type given. please check your configuration file."
                 Seq.empty
 
-        config.PreProcessing.Tasks
-            |> Array.filter(fun x -> x.Name = "fromCSV" && x.Active)
-            |> Array.iter(fun x ->
-                let csvResultFiles = getFiles cArgs.wDir config.General.ResultFileRegex "*.csv" config.General.RecurseSubDirs
-                let csvParams : IDictionary<string,string> = x.Params |> Array.map (fun x -> x.Key, x.Value) |> Array.toSeq |> dict
-                csvResultFiles |> Seq.iter (fromCSV csvParams))
-
         let validEventInfo (eventInfo:Event) =
             File.Exists(eventInfo.FileName) && Path.GetExtension(eventInfo.FileName) = ".xml"
 
-        let competitions = events
-                            |> Seq.filter validEventInfo
-                            |> Seq.map (fun x -> x.FileName)
-
         config.PreProcessing.Tasks
             |> Array.filter (fun x -> x.Active)
-            |> Array.iter (fun x -> 
+            |> Array.sortBy (fun x -> x.Sequence)
+            |> Array.iter (fun x ->
                     match x.Name with
-                    | "fromCSV" -> ()
-                    | "toJson" -> competitions |> Seq.iter toJson
-                    | "toUtf8" -> competitions |> Seq.iter toUtf8
-                    | _ -> tracer.Warn "preprocessing option %s is not supported" x.Name)
+                    | "fromCSV" ->
+                        let csvResultFiles = getFiles cArgs.wDir config.General.ResultFileRegex "*.csv" config.General.RecurseSubDirs
+                        let csvParams : IDictionary<string,string> = x.Params |> Array.map (fun x -> x.Key, x.Value) |> Array.toSeq |> dict
+                        csvResultFiles |> Seq.iter (fromCSV csvParams)
+                    | "toJson" ->
+                        events
+                        |> Seq.filter validEventInfo
+                        |> Seq.map (fun x -> x.FileName)
+                        |> Seq.iter toJson
+                    | "toUtf8" ->
+                        events
+                        |> Seq.filter validEventInfo
+                        |> Seq.map (fun x -> x.FileName)
+                        |> Seq.iter toUtf8
+                    | _ ->
+                        tracer.Warn "preprocessing option '%s' is not supported" x.Name)
+
+        let competitions = events
+                           |> Seq.filter validEventInfo
+                           |> Seq.map (fun x -> x.FileName)
 
         let events = 
             match config.General.ShowEvents with

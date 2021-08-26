@@ -16,7 +16,7 @@
   </General>
   <PreProcessing>
     <!-- options for input file preprocessing -->
-    <Task name="fromCSV" active="true">
+    <Task name="fromCSV" sequence="1" active="true">
       <Param key="separator">;</Param>
       <Param key="encoding">iso-8859-1</Param>
       <Param key="controlCard">Chipnr</Param>
@@ -32,8 +32,8 @@
       <Param key="className">Lang</Param>
       <Param key="classNameShort">Kurz</Param>
     </Task>
-    <Task name="toUtf8" active="true" />
-    <Task name="toJson" active="true" />
+    <Task name="toUtf8" sequence="2" active="true" />
+    <Task name="toJson" sequence="3" active="true" />
   </PreProcessing>
   <Events>
     <!-- set num to 0 if not needed -->
