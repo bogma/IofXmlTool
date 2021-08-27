@@ -1,0 +1,268 @@
+﻿<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Configuration">
+    <xs:annotation>
+      <xs:documentation>supported types: Team, Cup, Sum</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="General">
+          <xs:annotation>
+            <xs:documentation>showEvents: All, OmitAllMissing, OmitTailMissing</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute type="xs:string" name="name"/>
+                <xs:attribute type="xs:short" name="year"/>
+                <xs:attribute type="xs:byte" name="numberOfPlannedEvents"/>
+                <xs:attribute type="xs:byte" name="numberOfValidEvents"/>
+                <xs:attribute type="xs:byte" name="numberOfCountingEvents"/>
+                <xs:attribute type="xs:string" name="calcRule"/>
+                <xs:attribute type="xs:string" name="resultFileRegex"/>
+                <xs:attribute type="xs:string" name="recurseSubDirs"/>
+                <xs:attribute type="xs:string" name="includeStatus"/>
+                <xs:attribute type="xs:string" name="eventTitle"/>
+                <xs:attribute type="xs:string" name="showEvents"/>
+                <xs:attribute type="xs:byte" name="showCompetitors"/>
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="PreProcessing">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Task" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>options for input file preprocessing</xs:documentation>
+                </xs:annotation>
+                <xs:complexType mixed="true">
+                  <xs:sequence>
+                    <xs:element name="Param" maxOccurs="unbounded" minOccurs="0">
+                      <xs:complexType>
+                        <xs:simpleContent>
+                          <xs:extension base="xs:string">
+                            <xs:attribute type="xs:string" name="key" use="optional"/>
+                          </xs:extension>
+                        </xs:simpleContent>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" name="name" use="optional"/>
+                  <xs:attribute type="xs:byte" name="sequence" use="optional"/>
+                  <xs:attribute type="xs:string" name="active" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="PostProcessing">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Task" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>options for result postprocessing  dummy task needed to declare Tasks array</xs:documentation>
+                </xs:annotation>
+                <xs:complexType mixed="true">
+                  <xs:sequence>
+                    <xs:element name="Param" maxOccurs="unbounded" minOccurs="0">
+                      <xs:annotation>
+                        <xs:documentation>sumType: all ... sum up all points from competitors  sumType: cup ... sum up cup points from competitors</xs:documentation>
+                      </xs:annotation>
+                      <xs:complexType>
+                        <xs:simpleContent>
+                          <xs:extension base="xs:string">
+                            <xs:attribute type="xs:string" name="key" use="optional"/>
+                          </xs:extension>
+                        </xs:simpleContent>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:string" name="name" use="optional"/>
+                  <xs:attribute type="xs:byte" name="sequence" use="optional"/>
+                  <xs:attribute type="xs:string" name="active" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Events">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Event" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>set num to 0 if not needed</xs:documentation>
+                </xs:annotation>
+                <xs:complexType mixed="true">
+                  <xs:sequence>
+                    <xs:element name="map" maxOccurs="unbounded" minOccurs="0">
+                      <xs:complexType>
+                        <xs:simpleContent>
+                          <xs:extension base="xs:string">
+                            <xs:attribute type="xs:string" name="type" use="optional"/>
+                            <xs:attribute type="xs:string" name="from" use="optional"/>
+                            <xs:attribute type="xs:string" name="to" use="optional"/>
+                          </xs:extension>
+                        </xs:simpleContent>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute type="xs:byte" name="num" use="optional"/>
+                  <xs:attribute type="xs:string" name="date" use="optional"/>
+                  <xs:attribute type="xs:string" name="name" use="optional"/>
+                  <xs:attribute type="xs:string" name="fileName" use="optional"/>
+                  <xs:attribute type="xs:float" name="multiply" use="optional"/>
+                  <xs:attribute type="xs:string" name="calcRule" use="optional"/>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Classes">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Class" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>
+                    filter = include ... includes all Classes listed
+                    filter = exclude ... excludes all Classes listed
+                    any other filter ... use all Classes in result file
+                  </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="name" use="optional"/>
+                      <xs:attribute type="xs:byte" name="id" use="optional"/>
+                      <xs:attribute type="xs:string" name="shortName" use="optional"/>
+                      <xs:attribute type="xs:string" name="calcRule" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Combine" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>list class ids (comma separated) to be combined to one virtual 'class'</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="name" use="optional"/>
+                      <xs:attribute type="xs:string" name="classIds" use="optional"/>
+                      <xs:attribute type="xs:string" name="shortName" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="filter"/>
+            <xs:attribute type="xs:string" name="presentationOrder"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Organisations">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Organisation" maxOccurs="unbounded" minOccurs="0">
+                <xs:annotation>
+                  <xs:documentation>
+                    filter = include ... includes all Organisations listed
+                    filter = exclude ... excludes all Organisations listed
+                    any other filter ... use all Organisations in result file  if name is "" the name from result file will be used
+                  </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="name" use="optional"/>
+                      <xs:attribute type="xs:byte" name="id" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="filter"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Output">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Html">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="active"/>
+                      <xs:attribute type="xs:string" name="fileName"/>
+                      <xs:attribute type="xs:string" name="cssInline"/>
+                      <xs:attribute type="xs:string" name="docTemplate"/>
+                      <xs:attribute type="xs:string" name="classTemplate"/>
+                      <xs:attribute type="xs:string" name="detailsTemplate"/>
+                      <xs:attribute type="xs:string" name="cssFile"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Pdf">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="active"/>
+                      <xs:attribute type="xs:string" name="fileName"/>
+                      <xs:attribute type="xs:string" name="pageOrientation"/>
+                      <xs:attribute type="xs:string" name="pageSize"/>
+                      <xs:attribute type="xs:byte" name="marginLeft"/>
+                      <xs:attribute type="xs:byte" name="marginTop"/>
+                      <xs:attribute type="xs:byte" name="marginRight"/>
+                      <xs:attribute type="xs:byte" name="marginBottom"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Json">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="active"/>
+                      <xs:attribute type="xs:string" name="fileName"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Names">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Name" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="name" use="optional"/>
+                      <xs:attribute type="xs:string" name="aliasFor" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Translations">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Translation" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:string" name="key" use="optional"/>
+                      <xs:attribute type="xs:string" name="translate" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="type"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

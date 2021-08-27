@@ -3,7 +3,7 @@
 open System
 open System.IO
 open System.Reflection
-open FSharp.Compiler.SourceCodeServices
+open FSharp.Compiler.CodeAnalysis
 
 open Types
 open Logging
