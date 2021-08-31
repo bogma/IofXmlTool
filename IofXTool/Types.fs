@@ -3,7 +3,8 @@
 open IofXmlLib.Types
 open FSharp.Data
 
-type XmlConfig = XmlProvider<"res/config.xml">
+type XmlConfig = XmlProvider<Schema="./res/config.xsd", EmbeddedResource="IofXTool, IofXTool.res.config.xsd">
+//type XmlConfig = XmlProvider<"res/config.xml">
 
 type ResultType =
     | TeamResult of (XmlResult.Id * MyTeamResult list) seq

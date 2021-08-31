@@ -56,7 +56,9 @@ let buildResultHtml data =
     let classTemplateFile = Path.Combine(data.InputPath, data.Config.Output.Html.ClassTemplate)
     let cssContent = File.ReadAllText(cssFile)
     let creationDate = System.DateTime.Now.ToString("R")
-
+    let inlineCss = data.Config.Output.Html.CssInline |> Option.defaultValue false
+    let numberOfValidEvents = data.Config.General.NumberOfValidEvents
+                              |> Option.defaultValue data.Config.General.NumberOfPlannedEvents
     let html =
         match data.Result with
         | TeamResult tr ->
@@ -80,7 +82,7 @@ let buildResultHtml data =
 
             let compiledHtml =
                 init
-                |> add "inline" data.Config.Output.Html.CssInline
+                |> add "inline" inlineCss
                 |> add "cssContent" cssContent
                 |> add "title" data.Config.General.Name
                 |> add "year" DateTime.Now.Year
@@ -101,13 +103,14 @@ let buildResultHtml data =
                 |> Seq.map(fun (x,_) -> x)
                 |> Seq.toList
 
-            let orderedClassList = getOrderedClassList classList data.Config.Classes.PresentationOrder
+            let orderedClassList = getOrderedClassList classList (data.Config.Classes.PresentationOrder |> Option.defaultValue "")
 
             let catRes =
                 [ for cl in orderedClassList do
                     let i, catResult = classResults |> Seq.find(fun (catId, _) -> isSame catId cl)
-                    let finalCatRes = 
-                        match data.Config.General.ShowCompetitors with
+                    let finalCatRes =
+                        let numberOfCompetitorsInResult = data.Config.General.ShowCompetitors |> Option.defaultValue 0
+                        match numberOfCompetitorsInResult with
                         | n when n > 0 -> recalcCupPositions catResult |> Seq.takeWhile (fun (x, _) -> x <= n)
                         | _ -> recalcCupPositions catResult
                     let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i
@@ -115,18 +118,19 @@ let buildResultHtml data =
                         let cName, _ = getNamesById data.OrgCfg data.OrgInfo "Unknown Club" id
                         cName
 
-                    let rule = 
+                    let rule =
+                        let generalCalcRule = data.Config.General.CalcRule |> Option.defaultValue "sum"
                         let cat = data.Config.Classes.Classes |> Array.filter(fun x -> string x.Id = cl.Value) |> Array.tryHead
                         match cat with
                         | Some x ->
                             match x.CalcRule with
                             | Some x ->
                                 if x = "" then
-                                    data.Config.General.CalcRule
+                                    generalCalcRule
                                 else
                                     x
-                            | None -> data.Config.General.CalcRule
-                        | None -> data.Config.General.CalcRule
+                            | None -> generalCalcRule
+                        | None -> generalCalcRule
                     let strategy = getCalcStrategy rule
                     let eventInfos = (cr |> Seq.head).EventInfos
                     let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config strategy
@@ -135,7 +139,7 @@ let buildResultHtml data =
                         | Some x -> x.FormatPoints
                         | None -> sprintf "%2f"
                     yield init
-                        |> add "events" [1..data.Config.General.NumberOfValidEvents]
+                        |> add "events" [1..numberOfValidEvents]
                         |> add "generalEventTitle" data.Config.General.EventTitle
                         |> add "eventInfos" eventInfos
                         |> add "classFullName" cName
@@ -152,11 +156,11 @@ let buildResultHtml data =
 
             let compiledHtml =
                 init
-                |> add "inline" data.Config.Output.Html.CssInline
+                |> add "inline" inlineCss
                 |> add "cssContent" cssContent
                 |> add "title" data.Config.General.Name
                 |> add "takeBest" data.Config.General.NumberOfCountingEvents
-                |> add "numberOfEvents" data.Config.General.NumberOfValidEvents
+                |> add "numberOfEvents" numberOfValidEvents
                 |> add "year" DateTime.Now.Year
                 |> add "date" creationDate
                 |> add "catResult" catRes
@@ -178,8 +182,9 @@ let buildResultHtml data =
                                            |> Seq.find(fun (catId, _) -> isSame catId cfg.Id)
                         let invalid = catResult |> Seq.filter (fun x -> x.Disq) |> Seq.map (fun x -> 0, x)
                         let valid = recalcSumPositions catResult
+                        let showCompetitors = data.Config.General.ShowCompetitors |> Option.defaultValue 0
                         let cr =
-                            match data.Config.General.ShowCompetitors with
+                            match showCompetitors with
                             | n when n > 0 -> valid |> Seq.takeWhile (fun (x, _) -> x <= n)
                             | _ -> Seq.append valid invalid
                         
@@ -193,7 +198,7 @@ let buildResultHtml data =
                         let printDetailedResultRow = rowDetailsPrinter eventInfos data.Config None
 
                         yield init
-                            |> add "events" [1..data.Config.General.NumberOfValidEvents]
+                            |> add "events" [1..numberOfValidEvents]
                             |> add "eventInfos" eventInfos
                             |> add "classFullName" cName
                             |> add "classShortName" cShort
@@ -210,11 +215,11 @@ let buildResultHtml data =
 
             let compiledHtml =
                 init
-                |> add "inline" data.Config.Output.Html.CssInline
+                |> add "inline" inlineCss
                 |> add "cssContent" cssContent
                 |> add "title" data.Config.General.Name
                 |> add "takeBest" data.Config.General.NumberOfCountingEvents
-                |> add "numberOfEvents" data.Config.General.NumberOfValidEvents
+                |> add "numberOfEvents" numberOfValidEvents
                 |> add "year" DateTime.Now.Year
                 |> add "date" creationDate
                 |> add "catResult" catRes

@@ -169,11 +169,12 @@ module Helper =
     // filter results
     let filter fType filter comparer (input : IofXmlLib.Types.ParsedResult list) =
         match fType with
-        | "include" -> 
-            input |> List.filter (fun a -> List.exists (comparer a) filter)
-        | "exclude" -> 
-            input |> List.filter (fun a -> List.exists (comparer a) filter |> not)
-        | _ -> input
+        | Some x ->
+            match x with
+            | "Include" -> input |> List.filter (fun a -> List.exists (comparer a) filter)
+            | "Exclude" -> input |> List.filter (fun a -> List.exists (comparer a) filter |> not)
+            | _ -> input
+        | None -> input
 
     let getNamesById (cfg : IdNameInfo list) (fileInfo : IdNameInfo list) defaultValue (id : XmlResult.Id) =
         let n1 = cfg |> List.tryFind(fun x -> isSame x.Id id)

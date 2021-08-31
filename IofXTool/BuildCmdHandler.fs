@@ -29,17 +29,17 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
     | None -> ()
     | Some x ->
         let config = XmlConfig.Load(x)
-
-        let classCfg = config.Classes.Classes |> Array.toList |> List.map (fun x -> { Id = XmlResult.Id(None, string x.Id); Name = x.Name; ShortName = x.ShortName })
+        let classCfg = config.Classes.Classes |> Array.toList |> List.map (fun x -> { Id = XmlResult.Id(None, string x.Id); Name = x.Name; ShortName = x.ShortName |> Option.defaultValue "" })
         let orgCfg = config.Organisations.Organisations |> Array.toList |> List.map (fun x -> { Id = XmlResult.Id(None, string x.Id); Name = x.Name; ShortName = "" })
-
+        let searchSubDirs = config.General.RecurseSubDirs |> Option.defaultValue false
+        let resultFileRegex = config.General.ResultFileRegex |> Option.defaultValue ""
         let virtualClasses = config.Classes.Combines
                             |> Array.toList
                             |> List.map (fun x -> 
                                 { 
                                     Id = XmlResult.Id(None, x.ClassIds)
                                     Name = x.Name; 
-                                    ShortName = x.ShortName;
+                                    ShortName = x.ShortName |> Option.defaultValue "";
                                     Classes = x.ClassIds.Split[|','|]
                                               |> Array.toList
                                               |> List.map (fun y -> y.Trim())
@@ -71,6 +71,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
 
             let calcSingleResult winningTime (item : ParsedResult) i =
                 let rule =
+                    let calcRule = config.General.CalcRule |> Option.defaultValue "sum"
                     match eventInfo.Rule with
                     | Some r -> r
                     | None ->
@@ -80,11 +81,11 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                             match x.CalcRule with
                             | Some x ->
                                 if x = "" then
-                                    config.General.CalcRule
+                                    calcRule
                                 else
                                     x
-                            | None -> config.General.CalcRule
-                        | None -> config.General.CalcRule
+                            | None -> calcRule
+                        | None -> calcRule
                 let strategy = getCalcStrategy rule
                 let points =
                     match strategy with
@@ -126,7 +127,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let res = (cupPositions, timeGroupedRes) 
                                                         ||> Seq.map2 (fun i1 i2 -> snd i2 
                                                                                     |> Seq.map (fun item -> calcSingleResult (decimal winningTime) item i1))
-                                        let includeStatus = config.General.IncludeStatus.Replace(" ", "").Split ','
+                                        let includeStatus = (config.General.IncludeStatus |> Option.defaultValue "").Replace(" ", "").Split ','
                                         let others = clRes
                                                         |> Seq.filter (fun x -> includeStatus |> Array.exists (fun y -> y = x.Status))
                                                         |> Seq.map (fun x -> {
@@ -166,7 +167,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
             |> Array.iter (fun x ->
                     match x.Name with
                     | "fromCSV" ->
-                        let csvResultFiles = getFiles cArgs.wDir config.General.ResultFileRegex "*.csv" config.General.RecurseSubDirs
+                        let csvResultFiles = getFiles cArgs.wDir resultFileRegex "*.csv" searchSubDirs
                         let csvParams : IDictionary<string,string> = x.Params |> Array.map (fun x -> x.Key, x.Value) |> Array.toSeq |> dict
                         csvResultFiles |> Seq.iter (fromCSV csvParams)
                     | "toJson" ->
@@ -186,13 +187,18 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                            |> Seq.filter validEventInfo
                            |> Seq.map (fun x -> x.FileName)
 
-        let events = 
-            match config.General.ShowEvents with
+        let events =
+            let showOption = config.General.ShowEvents |> Option.defaultValue "All"
+            match showOption with
             | "OmitTailMissing" -> events |> Seq.sortByDescending (fun x -> x.Number) |> Seq.skipWhile (fun x -> not (validEventInfo x)) |> Seq.sortBy (fun x -> x.Number)
             | "OmitAllMissing" -> events |> Seq.filter validEventInfo
-            | _ -> events
+            | "All" | _ -> events
 
-        let res = 
+        let res =
+            let numberOfCountingEvents = config.General.NumberOfCountingEvents
+                                      |> Option.defaultValue config.General.NumberOfPlannedEvents
+            let numberOfValidEvents = config.General.NumberOfValidEvents
+                                      |> Option.defaultValue config.General.NumberOfPlannedEvents
             match config.Type with
             | "Cup" ->
                 let v = events
@@ -208,12 +214,12 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let countingResults =
                                             r
                                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
-                                            |> Seq.truncate config.General.NumberOfCountingEvents
+                                            |> Seq.truncate numberOfCountingEvents
                                         let x =
                                             r
                                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
                                             |> Seq.mapi (fun i (a, b, c) -> 
-                                                            let counts = i < config.General.NumberOfCountingEvents
+                                                            let counts = i < numberOfCountingEvents
                                                             { EventDetails = a; ClassId = b; PRR = c; ResultCounts = counts; })
                                         let sum = 
                                             countingResults
@@ -231,7 +237,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let sum = r |> Seq.sumBy (fun (_, _, prr) -> prr.Points) |> float
                                         let x = r |> Seq.map (fun (a, b, c) -> { EventDetails = a; ClassId = b; PRR = c; ResultCounts = true; })
                                         let eventsOk = x |> Seq.filter (fun i -> i.PRR.Status = "OK") |> Seq.length
-                                        let disq = not (eventsOk = config.General.NumberOfValidEvents)
+                                        let disq = not (eventsOk = numberOfValidEvents)
                                         { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalTime = sum; TimeBehind = 0.0; Disq = disq; Results = x; EventInfos = events |> Seq.toList })
                         |> Seq.groupBy (fun x -> x.ClassId)
                         |> Seq.map (fun (_, clRes) -> 
@@ -292,47 +298,53 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
             if config.Output.Html.Active then
                 buildResultHtml data |> ignore
 
-            if config.Output.Pdf.Active then
-                if not config.Output.Html.Active then
-                    tracer.Warn "PDF output can only be built upon HTML output - please activate html output"
-                else
-                    // apply PDF options
-                    let pdfConfig = PdfGenerateConfig()
+            let pdfOptions = data.Config.Output.Pdf
+            if pdfOptions.IsSome then
+                let pdfOptions = pdfOptions.Value
+                if pdfOptions.Active then
+                    if not config.Output.Html.Active
+                    then
+                        tracer.Warn "PDF output can only be built upon HTML output - please activate html output"
+                    else
+                        // apply PDF options
+                        let pdfConfig = PdfGenerateConfig()
 
-                    let pdfOptions = data.Config.Output.Pdf
-                    match pdfOptions.PageSize with
-                    | "A3" -> pdfConfig.PageSize <- PageSize.A3
-                    | "A4" -> pdfConfig.PageSize <- PageSize.A4
-                    | "A5" -> pdfConfig.PageSize <- PageSize.A5
-                    | _ -> pdfConfig.PageSize <- PageSize.A4
+                        match pdfOptions.PageSize |> Option.defaultValue "" with
+                        | "A3" -> pdfConfig.PageSize <- PageSize.A3
+                        | "A4" -> pdfConfig.PageSize <- PageSize.A4
+                        | "A5" -> pdfConfig.PageSize <- PageSize.A5
+                        | _ -> pdfConfig.PageSize <- PageSize.A4
 
-                    match pdfOptions.PageOrientation with
-                    | "Landscape" -> pdfConfig.PageOrientation <- PageOrientation.Landscape
-                    | _ -> pdfConfig.PageOrientation <- PageOrientation.Portrait
+                        match pdfOptions.PageOrientation |> Option.defaultValue "" with
+                        | "Landscape" -> pdfConfig.PageOrientation <- PageOrientation.Landscape
+                        | _ -> pdfConfig.PageOrientation <- PageOrientation.Portrait
 
-                    pdfConfig.MarginLeft <- pdfOptions.MarginLeft
-                    pdfConfig.MarginRight <- pdfOptions.MarginRight
-                    pdfConfig.MarginTop <- pdfOptions.MarginTop
-                    pdfConfig.MarginBottom <- pdfOptions.MarginBottom
+                        pdfConfig.MarginLeft <- pdfOptions.MarginLeft |> Option.defaultValue 20
+                        pdfConfig.MarginRight <- pdfOptions.MarginRight |> Option.defaultValue 20
+                        pdfConfig.MarginTop <- pdfOptions.MarginTop |> Option.defaultValue 20
+                        pdfConfig.MarginBottom <- pdfOptions.MarginBottom |> Option.defaultValue 20
 
-                    let htmlInputFile = Path.Combine(data.InputPath, data.Config.Output.Html.FileName)
-                    let outputFile = Path.Combine(data.InputPath, data.Config.Output.Pdf.FileName)
+                        let htmlInputFile = Path.Combine(data.InputPath, data.Config.Output.Html.FileName)
+                        let outputFile = Path.Combine(data.InputPath, pdfOptions.FileName)
 
-                    // disable logging of PdfSharpCore nuget package
-                    let consoleOut = Console.Out
-                    Console.SetOut(TextWriter.Null)
-                    let doc = PdfGenerator.GeneratePdf(File.ReadAllText(htmlInputFile), pdfConfig);
+                        // disable logging of PdfSharpCore nuget package
+                        let consoleOut = Console.Out
+                        Console.SetOut(TextWriter.Null)
+                        let doc = PdfGenerator.GeneratePdf(File.ReadAllText(htmlInputFile), pdfConfig);
                     
-                    // enable logging again
-                    Console.SetOut(consoleOut)
-                    doc.Save(outputFile)
-                    tracer.Info "PDF output written to %s" outputFile
+                        // enable logging again
+                        Console.SetOut(consoleOut)
+                        doc.Save(outputFile)
+                        tracer.Info "PDF output written to %s" outputFile
 
-            if config.Type = "Cup" && config.Output.Json.Active then
-                let outputFile = Path.Combine(cArgs.wDir, config.Output.Json.FileName)
-                let json = JsonConvert.SerializeObject(r)
-                File.WriteAllText(outputFile, json, Text.Encoding.UTF8)
-                tracer.Info "JSON output written to %s" outputFile
+            let jsonOptions = data.Config.Output.Json
+            if jsonOptions.IsSome then
+                let jsonOptions = jsonOptions.Value
+                if config.Type = "Cup" && jsonOptions.Active then
+                    let outputFile = Path.Combine(cArgs.wDir, jsonOptions.FileName)
+                    let json = JsonConvert.SerializeObject(r)
+                    File.WriteAllText(outputFile, json, Text.Encoding.UTF8)
+                    tracer.Info "JSON output written to %s" outputFile
 
             config.PostProcessing.Tasks
                 |> Array.filter (fun x -> x.Active)

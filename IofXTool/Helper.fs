@@ -75,15 +75,17 @@ let tryLocateFile (wDir:string) (f:string) =
                 None
 
 let getEventInfos (config:XmlConfig.Configuration) dir =
-    let races = [1..config.General.NumberOfPlannedEvents]
+    let races = [1.. config.General.NumberOfPlannedEvents]
 
-    tracer.Debug "searching for events matching the regex: %s (subdirs include: %b)" config.General.ResultFileRegex config.General.RecurseSubDirs
+    let searchSubDirs = config.General.RecurseSubDirs |> Option.defaultValue false
+    let resultFileRegex = config.General.ResultFileRegex |> Option.defaultValue ""
+    tracer.Debug "searching for events matching the regex: %s (subdirs include: %b)" resultFileRegex searchSubDirs
 
-    let matchingFiles = getFiles dir config.General.ResultFileRegex "*.xml" config.General.RecurseSubDirs
+    let matchingFiles = getFiles dir resultFileRegex "*.xml" searchSubDirs
     let matchingEvents = matchingFiles |> Seq.choose (fun x -> 
                                                           let fn = Path.GetFileNameWithoutExtension(x)
                                                           match fn with
-                                                          | Regex config.General.ResultFileRegex [evNum] -> Some (int evNum, x)
+                                                          | Regex resultFileRegex [evNum] -> Some (int evNum, x)
                                                           | _ -> None)
     
     tracer.Info "found the following events matching the regex pattern: %A" matchingEvents
@@ -91,24 +93,25 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
     let parseMappings (maps : XmlConfig.Map[]) =
         [| for m in maps do
             let t = match m.Type with
-                    | "class" -> Class
-                    | "org" -> Organisation
+                    | "Class" -> Class
+                    | "Org" -> Organisation
                     | _ -> Unknown
             yield {Type = t; From = m.From; To = m.To } |]
 
     races |> List.map (fun i ->
-                            let evCfg = config.Events |> Array.tryFind (fun e -> e.Num = i)
+                            let evCfg = config.Events |> Array.tryFind (fun e -> (e.Num |> Option.defaultValue -1) = i)
                             let evt = match evCfg with
                                       | Some ev ->
+                                          let evFileName = ev.FileName |> Option.defaultValue ""
                                           let fName =
-                                              if ev.FileName = "" then
-                                                  let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, ev.FileName)
+                                              if evFileName = "" then
+                                                  let _, evFile = matchingEvents |> Seq.tryFind (fun (n, x) -> n = i) |> Option.defaultValue (i, evFileName)
                                                   evFile
                                               else
-                                                  tryLocateFile dir ev.FileName |> Option.defaultValue ev.FileName
+                                                  tryLocateFile dir evFileName |> Option.defaultValue evFileName
                                           {
                                               FileName = fName;
-                                              Name = ev.Name |> Option.defaultValue "" ;
+                                              Name = ev.Name |> Option.defaultValue "";
                                               Date = ev.Date |> Option.defaultValue "";
                                               Number = i;
                                               Multiply = ev.Multiply |> Option.defaultValue 1.0m;
@@ -137,3 +140,19 @@ let getOrderedClassList classList presentationOrder =
         |> List.filter(fun x -> classWeight |> List.exists(fun y -> isSame y x) |> not)
 
     classWeight @ unsortedClassList
+
+////type Configuration(path, fileName) =
+
+////    static let configFile = tryLocateFile path fileName
+
+////    static let cfg =
+////        match configFile with
+////        | Some x -> Some(XmlConfig.Load(x))
+////        | None -> None
+
+////    member __.IsLoaded =
+////        match cfg with
+////        | Some x -> true
+////        | None -> false
+
+////    static member Cfg = cfg.Value

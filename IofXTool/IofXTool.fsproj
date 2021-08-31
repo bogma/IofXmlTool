@@ -19,6 +19,7 @@
     <EmbeddedResource Include="res\team_class_template.html" />
     <Resource Include="res\team_document_template.html" />
     <Content Include="res\config.xml" />
+    <EmbeddedResource Include="res\config.xsd" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Types.fs" />

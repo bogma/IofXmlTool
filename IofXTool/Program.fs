@@ -66,7 +66,7 @@ let main argv =
             cfgFile = args.GetResult (Config_File, defaultValue = "config.xml");
         }
         
-        let version = args.Contains <@ Command.Version @>
+        let version = args.Contains <@ Version @>
         let isSilent = args.Contains <@ Silent @>
         let isVerbose = args.Contains <@ Verbose @>
         
@@ -79,5 +79,5 @@ let main argv =
             handleCommand commonArgs (args.GetSubCommand())
 
     with e ->
-         tracer.ErrorException e "%s %s" e.Message e.StackTrace
+        tracer.ErrorException e "%s %s" e.Message e.StackTrace
     0
