@@ -2,7 +2,6 @@
 
 open IofXmlLib.Types
 open IofXmlLib.Helper
-open IofXmlLib.Calc
 open IofXmlLib.Logging
 
 open Helper
@@ -12,7 +11,6 @@ open Fue.Compiler
 open Fue.Data
 open FSharp.Data
 
-open System
 open System.Collections.Generic
 open System.IO
 
@@ -27,6 +25,15 @@ type OrganisationSumResult = {
 
 let sumOrganisations (taskParams : IDictionary<string,string>) data =
 
+    let isSameOrg (y : CupResult) x = x.Equals y.OrganisationId.Value
+    let isSameClass (y : CupResult) x = x.Equals y.ClassId.Value
+
+    let filter fType filter comparer (input : CupResult seq) =
+        match fType with
+        | "Include" -> input |> Seq.filter (fun a -> List.exists (comparer a) filter)
+        | "Exclude" -> input |> Seq.filter (fun a -> List.exists (comparer a) filter |> not)
+        | _ -> input
+
     let recalcPositions (res : seq<OrganisationSumResult>) = 
         let totalGrouped = res
                             |> Seq.sortBy (fun x -> -x.Points)
@@ -39,18 +46,28 @@ let sumOrganisations (taskParams : IDictionary<string,string>) data =
 
     let buildCsvRow obj = ClubSumCsvType.Row(obj.Position, obj.Name, obj.Points, obj.Competitors)
     let buildCsvTable = (Seq.map buildCsvRow) >> Seq.toList >> ClubSumCsvType
+    
+    let filterKind = getTaskParam taskParams "filter" ""
+    let filterType = getTaskParam taskParams "filterType" ""
+    let filterVal = (getTaskParam taskParams "filterValue" "").Split ',' |> Array.toList
 
     match data.Result with
         | CupResult cr ->
-            let fileName = taskParams.["outputPrefix"] + data.Config.Output.Html.FileName
+            let fileName = (getTaskParam taskParams "outputPrefix" "") + data.Config.Output.Html.FileName
             let outputFile = Path.Combine(data.InputPath, fileName)
-            let res = cr
+            let fres =
+                match filterKind with
+                | "Class" -> cr |> filter filterType filterVal isSameClass
+                | "Organisation" -> cr |> filter filterType filterVal isSameOrg
+                | _ -> cr
+
+            let res = fres
                     |> Seq.groupBy (fun r -> r.OrganisationId.Value)
                     |> Seq.map(fun (_, results) ->
                         let org = (results |> Seq.take 1 |> Seq.exactlyOne).OrganisationId
                         let orgName, _= getNamesById data.OrgCfg data.OrgInfo "Unknown Club" org
                         let sum =
-                            match taskParams.["sumType"] with
+                            match (getTaskParam taskParams "sumType" "") with
                             | "cup" ->
                                 results |> Seq.sumBy(fun r -> r.TotalPoints)
                             | "all" ->

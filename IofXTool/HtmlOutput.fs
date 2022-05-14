@@ -57,6 +57,8 @@ let buildResultHtml data =
     let cssContent = File.ReadAllText(cssFile)
     let creationDate = System.DateTime.Now.ToString("R")
     let inlineCss = data.Config.Output.Html.CssInline |> Option.defaultValue false
+    let numberOfCountingEvents = data.Config.General.NumberOfCountingEvents
+                                 |> Option.defaultValue data.Config.General.NumberOfPlannedEvents
     let numberOfValidEvents = data.Config.General.NumberOfValidEvents
                               |> Option.defaultValue data.Config.General.NumberOfPlannedEvents
     let html =
@@ -69,6 +71,7 @@ let buildResultHtml data =
                                 let (cName, _) = getNamesById data.OrgCfg data.OrgInfo "Unknown School" id
                                 cName
                             let cr = recalcTeamPositions tr
+                            
                             init
                                 |> add "classFullName" cName
                                 |> add "classShortName" cShort
@@ -84,7 +87,7 @@ let buildResultHtml data =
                 init
                 |> add "inline" inlineCss
                 |> add "cssContent" cssContent
-                |> add "title" data.Config.General.Name
+                |> add "title" (data.Config.General.Name |> Option.defaultValue "")
                 |> add "year" DateTime.Now.Year
                 |> add "date" creationDate
                 |> add "catResult" catRes
@@ -140,7 +143,7 @@ let buildResultHtml data =
                         | None -> sprintf "%2f"
                     yield init
                         |> add "events" [1..numberOfValidEvents]
-                        |> add "generalEventTitle" data.Config.General.EventTitle
+                        |> add "generalEventTitle" (data.Config.General.EventTitle |> Option.defaultValue "")
                         |> add "eventInfos" eventInfos
                         |> add "classFullName" cName
                         |> add "classShortName" cShort
@@ -158,8 +161,8 @@ let buildResultHtml data =
                 init
                 |> add "inline" inlineCss
                 |> add "cssContent" cssContent
-                |> add "title" data.Config.General.Name
-                |> add "takeBest" data.Config.General.NumberOfCountingEvents
+                |> add "title" (data.Config.General.Name |> Option.defaultValue "")
+                |> add "takeBest" numberOfCountingEvents
                 |> add "numberOfEvents" numberOfValidEvents
                 |> add "year" DateTime.Now.Year
                 |> add "date" creationDate
@@ -199,6 +202,7 @@ let buildResultHtml data =
 
                         yield init
                             |> add "events" [1..numberOfValidEvents]
+                            |> add "generalEventTitle" (data.Config.General.EventTitle |> Option.defaultValue "")
                             |> add "eventInfos" eventInfos
                             |> add "classFullName" cName
                             |> add "classShortName" cShort
@@ -217,7 +221,7 @@ let buildResultHtml data =
                 init
                 |> add "inline" inlineCss
                 |> add "cssContent" cssContent
-                |> add "title" data.Config.General.Name
+                |> add "title" (data.Config.General.Name |> Option.defaultValue "")
                 |> add "takeBest" data.Config.General.NumberOfCountingEvents
                 |> add "numberOfEvents" numberOfValidEvents
                 |> add "year" DateTime.Now.Year

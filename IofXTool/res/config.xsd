@@ -31,7 +31,11 @@
         </xs:attribute>
         <xs:attribute type="xs:string" name="includeStatus" default="" use="optional"/>
         <xs:attribute type="xs:string" name="eventTitle"/>
-        <xs:attribute type="xs:string" name="showEvents"/>
+        <xs:attribute type="xs:string" name="showEvents">
+          <xs:annotation>
+            <xs:documentation>showEvents: All, OmitAllMissing, OmitTailMissing, (Default: All)</xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
         <xs:attribute type="xs:int" name="showCompetitors" use="optional">
           <xs:annotation>
             <xs:documentation>Number of competitors to be shown in result. Use it if you want to show i.e. only the first 3 competitors of each category.</xs:documentation>
@@ -182,6 +186,7 @@
       <xs:extension base="xs:string">
         <xs:attribute type="xs:string" name="name" use="required"/>
         <xs:attribute type="xs:int" name="id" use="required"/>
+        <xs:attribute type="xs:string" name="shortName" use="optional"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
@@ -269,11 +274,7 @@
   </xs:complexType>
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
-      <xs:element type="GeneralType" name="General">
-        <xs:annotation>
-          <xs:documentation>showEvents: All, OmitAllMissing, OmitTailMissing</xs:documentation>
-        </xs:annotation>
-      </xs:element>
+      <xs:element type="GeneralType" name="General"/>
       <xs:element type="PreProcessingType" name="PreProcessing"/>
       <xs:element type="PostProcessingType" name="PostProcessing"/>
       <xs:element type="EventsType" name="Events"/>

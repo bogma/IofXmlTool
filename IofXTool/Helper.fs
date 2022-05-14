@@ -8,6 +8,7 @@ open Types
 open System.IO
 open System.Reflection
 open System.Text.RegularExpressions
+open System.Collections.Generic
 
 let levenshteinCheck (data:ResultData) =
 
@@ -79,7 +80,7 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
 
     let searchSubDirs = config.General.RecurseSubDirs |> Option.defaultValue false
     let resultFileRegex = config.General.ResultFileRegex |> Option.defaultValue ""
-    tracer.Debug "searching for events matching the regex: %s (subdirs include: %b)" resultFileRegex searchSubDirs
+    tracer.Debug "searching for files matching the regex: %s (subdirs include: %b)" resultFileRegex searchSubDirs
 
     let matchingFiles = getFiles dir resultFileRegex "*.xml" searchSubDirs
     let matchingEvents = matchingFiles |> Seq.choose (fun x -> 
@@ -88,7 +89,8 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
                                                           | Regex resultFileRegex [evNum] -> Some (int evNum, x)
                                                           | _ -> None)
     
-    tracer.Info "found the following events matching the regex pattern: %A" matchingEvents
+    tracer.Info "found the following files matching the regex pattern:"
+    matchingEvents |> Seq.iter(fun (n, e) -> tracer.Info "\tEvent %d - %s" n e)
 
     let parseMappings (maps : XmlConfig.Map[]) =
         [| for m in maps do
@@ -140,6 +142,14 @@ let getOrderedClassList classList presentationOrder =
         |> List.filter(fun x -> classWeight |> List.exists(fun y -> isSame y x) |> not)
 
     classWeight @ unsortedClassList
+
+let getTaskParam (para:IDictionary<string, string>) key defVal =
+    
+    if para.ContainsKey(key) then
+        para.[key]
+    else
+        defVal
+
 
 ////type Configuration(path, fileName) =
 

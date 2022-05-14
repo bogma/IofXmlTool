@@ -2,7 +2,7 @@
   "profiles": {
     "Debug SbgCup": {
       "commandName": "Project",
-      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2021\""
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2022\"  --config-file \"lms_sprint_config.xml\""
     },
     "Debug AustriaCup": {
       "commandName": "Project",
@@ -10,7 +10,11 @@
     },
     "Debug Sprint": {
       "commandName": "Project",
-      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2019\\sbgcup\" --config-file \"lms_sprint_config.xml\""
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2022\" --config-file \"lms_sprint_config.xml\" --verbose"
+    },
+    "Debug Info": {
+      "commandName": "Project",
+      "commandLineArgs": "info --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2021\""
     },
     "Debug Rules List": {
       "commandName": "Project",
@@ -19,6 +23,14 @@
     "Debug Rules Compile": {
       "commandName": "Project",
       "commandLineArgs": "rules -a Compile"
+    },
+    "Debug Team": {
+      "commandName": "Project",
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2022\\schcup\"  --config-file \"config_team.xml\" --files \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2022\\schcup\\01\\results\\2022_01_schcup_result_splits.xml\""
+    },
+    "Debug Sum": {
+      "commandName": "Project",
+      "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2022\\schcup\"  --config-file \"config_sum.xml\""
     }
   }
 }
