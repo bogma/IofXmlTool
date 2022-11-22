@@ -1,15 +1,6 @@
 ﻿module Commands
 
-open System
 open Argu
-
-type AddArgs =
-    | [<ExactlyOnce>] File of file:string
-with
-    interface IArgParserTemplate with
-        member this.Usage =
-            match this with
-            | File _ -> "File name to add"
 
 type InfoArgs =
     | Full of full:bool
@@ -21,15 +12,16 @@ with
 
 /// new command
 type NewArgs =
-    | [<ExactlyOnce; AltCommandLine("-k")>] Kind of kind:NewArgsType
+    | [<MandatoryAttribute; ExactlyOnce; AltCommandLine("-k")>] Kind of kind:NewArgsType
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Kind _ -> "What kind of new config (Cup, Team)"
+            | Kind _ -> "What kind of new config - valid options: Cup, Team, Sum"
 and NewArgsType =
     | Cup
     | Team
+    | Sum
 
 /// build command
 type BuildArgs =
@@ -59,7 +51,7 @@ with
         member this.Usage =
             match this with
             | File _ -> "file containing rule definitions (defaults to 'calc_rules.xml')"
-            | Action _ -> "sub command action: Compile, List, RestoreDefault"
+            | Action _ -> "sub command action: Compile, List, ListDetails, ListFunctions, RestoreDefault"
 
 type Command =
     // global options
@@ -71,7 +63,6 @@ type Command =
     | [<Inherit>]                                       Log_File of path:string
     // subcommands
     | [<CustomCommandLine("new")>]                      New of ParseResults<NewArgs>
-    | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("build")>]                    Build of ParseResults<BuildArgs>
     | [<CustomCommandLine("info")>]                     Info of ParseResults<InfoArgs>
     | [<CustomCommandLine("rules")>]                    Rules of ParseResults<RulesArgs>
@@ -80,7 +71,6 @@ with
         member this.Usage =
             match this with
             | New _ ->                  "create a new project"
-            | Add _ ->                  "add a new resource to project"
             | Build _ ->                "build a project"
             | Info _ ->                 "print project info"
             | Rules _ ->                "add new caluclation rules"

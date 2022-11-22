@@ -19,6 +19,15 @@
     <Content Include="res\team_class_template.html" />
     <Content Include="res\team_document_template.html" />
     <Content Include="res\config.xml" />
+    <EmbeddedResource Include="res\sum_class_template.html" />
+    <EmbeddedResource Include="res\sum_details_template.html" />
+    <EmbeddedResource Include="res\cup_class_template.html" />
+    <EmbeddedResource Include="res\cup_details_template.html" />
+    <EmbeddedResource Include="res\cup_document_template.html" />
+    <EmbeddedResource Include="res\default.css" />
+    <EmbeddedResource Include="res\team_class_template.html" />
+    <EmbeddedResource Include="res\team_document_template.html" />
+    <EmbeddedResource Include="res\config.xml" />
     <EmbeddedResource Include="res\config.xsd" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
@@ -26,6 +35,7 @@
     <Compile Include="Helper.fs" />
     <Compile Include="HtmlOutput.fs" />
     <Compile Include="PostProcessingTasks.fs" />
+    <Compile Include="NewProjectCmdHandler.fs" />
     <Compile Include="BuildCmdHandler.fs" />
     <Compile Include="RuleCmdHandler.fs" />
     <Compile Include="CommandHandlers.fs" />
@@ -46,7 +56,7 @@
 
   <ItemGroup>
     <Reference Include="CalcLib">
-      <HintPath>bin\Debug\net7.0\CalcLib.dll</HintPath>
+      <HintPath>bin\Debug\$(TargetFramework)\CalcLib.dll</HintPath>
     </Reference>
   </ItemGroup>
 

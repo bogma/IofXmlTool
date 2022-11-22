@@ -48,7 +48,7 @@ module Calc =
         [{0}"sum"]
 """
     let readCalcRuleDefinitions files =
-        files 
+        files
         |> List.collect(fun ruleFile ->
             if not(File.Exists(ruleFile)) then
                 ["", "", ""]
@@ -56,7 +56,7 @@ module Calc =
                 let additionalRules = XmlRules.Load(ruleFile)
 
                 let f =
-                    additionalRules.Rules 
+                    additionalRules.Rules
                     |> Array.map (fun x -> sprintf "%s\n" x.Value)
                     |> Array.fold (+) ""
                 let m =
@@ -100,13 +100,13 @@ module Calc =
         match errors1, exitCode1 with
         | [| |], 0 ->
             tracer.Warn "Compilation successful - new calculation rules available"
-        | _ -> 
+        | _ ->
             tracer.Error "Compilation failed - Exit code %d\n%A" exitCode1 errors1
             File.Delete fn2
             File.Delete fn3
             File.Move(fn4, fn3)
             File.Delete fn4
-    
+
     let readResource (resourceName:string) =
         match resourceName.Split(',') with
         | [| _; name |] ->
@@ -120,5 +120,5 @@ module Calc =
         File.WriteAllText(tmp, (readResource "IofXmlLib, IofXmlLib.calculation_rules.xml" |> Option.defaultValue ""))
         buildCalcLib tmp
         File.Delete tmp
-    
+
 

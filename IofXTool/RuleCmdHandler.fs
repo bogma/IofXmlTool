@@ -11,7 +11,7 @@ open Helper
 open Commands
 
 let rules (cArgs: CommonArgs) (args: ParseResults<_>) =
- 
+
     let action = args.GetResult(Action)
     match action with
     | Compile ->
@@ -24,7 +24,7 @@ let rules (cArgs: CommonArgs) (args: ParseResults<_>) =
             tracer.Warn "rule file not found"
     | List ->
         let infos = getNames None
-        infos |> List.iter (fun x -> 
+        infos |> List.iter (fun x ->
             match getCalcStrategy x with
             | Some s ->
                 let n = s.RuleName
@@ -34,7 +34,7 @@ let rules (cArgs: CommonArgs) (args: ParseResults<_>) =
                 tracer.Info "No info for '%s' found in CalcLib." x)
     | ListDetails ->
         let infos = getNames None
-        infos |> List.iter (fun x -> 
+        infos |> List.iter (fun x ->
             match getCalcStrategy x with
             | Some s ->
                 let n = s.RuleName
@@ -44,13 +44,14 @@ let rules (cArgs: CommonArgs) (args: ParseResults<_>) =
             | None ->
                 tracer.Info "No info for '%s' found in CalcLib." x)
     | ListFunctions ->
-        let staticFlags = BindingFlags.NonPublic ||| BindingFlags.Public ||| BindingFlags.Static 
+        let staticFlags = BindingFlags.NonPublic ||| BindingFlags.Public ||| BindingFlags.Static
         let asm = Assembly.Load("CalcLib")
         let calc = asm.GetType("IofXmlLib.Calc")
         let methods = calc.GetMethods(staticFlags)
-        methods 
+        tracer.Info "These are the names of the available calculation rules that can be used:"
+        methods
         |> Array.filter (fun m -> not (m.Name.StartsWith("get")))
-        |> Array.iter (fun m -> tracer.Info "%s" m.Name)
+        |> Array.iter (fun m -> tracer.Info "> %s" m.Name)
     | RestoreDefault ->
         restoreDefaultCalcLib
 

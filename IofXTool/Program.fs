@@ -1,9 +1,7 @@
 ﻿open System
-open System.Reflection
 open Argu
 
 open Commands
-open CommandHandlers
 open System.IO
 open IofXmlLib.Logging
 
@@ -36,10 +34,9 @@ let processCommand cArgs subCmd subArgs =
 
 let handleCommand cArgs command =
     match command with
-    | New a -> processCommand cArgs newProject a
-    | Add a -> processCommand cArgs add a
+    | New a -> processCommand cArgs NewProjectCmdHandler.newProject a
     | Build a -> processCommand cArgs BuildCmdHandler.build a
-    | Info a -> processCommand cArgs info a
+    | Info a -> processCommand cArgs CommandHandlers.info a
     | Rules a -> processCommand cArgs RuleCmdHandler.rules a
     // global options; list here in order to maintain compiler warnings
     | Verbose
@@ -65,11 +62,11 @@ let main argv =
             wDir = args.GetResult (Working_Directory, defaultValue = Directory.GetCurrentDirectory());
             cfgFile = args.GetResult (Config_File, defaultValue = "config.xml");
         }
-        
+
         let version = args.Contains <@ Version @>
         let isSilent = args.Contains <@ Silent @>
         let isVerbose = args.Contains <@ Verbose @>
-        
+
         traceVersion isSilent
 
         if not version then
