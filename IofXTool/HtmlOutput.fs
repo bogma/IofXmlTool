@@ -108,6 +108,12 @@ let buildResultHtml data =
 
             let orderedClassList = getOrderedClassList classList (data.Config.Classes.PresentationOrder |> Option.defaultValue "")
 
+            let catInfo =
+                [ for cl in orderedClassList do
+                    let i, _ = classResults |> Seq.find(fun (catId, _) -> isSame catId cl)
+                    let cName, cShort = getNamesById data.ClassCfg data.ClassInfo "Unknown Class" i
+                    cName, cShort ]
+
             let catRes =
                 [ for cl in orderedClassList do
                     let i, catResult = classResults |> Seq.find(fun (catId, _) -> isSame catId cl)
@@ -167,6 +173,7 @@ let buildResultHtml data =
                 |> add "year" DateTime.Now.Year
                 |> add "date" creationDate
                 |> add "catResult" catRes
+                |> add "catInfo" catInfo
                 |> fromFile docTemplateFile
             compiledHtml
         | SumResult sr ->

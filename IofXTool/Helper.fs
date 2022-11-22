@@ -95,8 +95,8 @@ let getEventInfos (config:XmlConfig.Configuration) dir =
     let parseMappings (maps : XmlConfig.Map[]) =
         [| for m in maps do
             let t = match m.Type with
-                    | "Class" -> Class
-                    | "Org" -> Organisation
+                    | ClassKind -> Class
+                    | OrganisationKind -> Organisation
                     | _ -> Unknown
             yield {Type = t; From = m.From; To = m.To } |]
 

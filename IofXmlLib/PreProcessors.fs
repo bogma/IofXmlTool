@@ -108,6 +108,6 @@ module PreProcessors =
             else
                 tracer.Debug "no need to process CSV %s" inputFile
         with
-        | :? System.Exception as ex -> tracer.WarnException ex "parsing %s failed" inputFile
+        | ex -> tracer.WarnException ex "parsing %s failed" inputFile
 
 

@@ -44,6 +44,23 @@ module Helper =
         if m.Success then Some(List.tail [ for g in m.Groups -> g.Value ])
         else None
 
+    let (|IncludeFilter|ExcludeFilter|NoFilter|) x =
+        if String.Equals(x, "include", StringComparison.InvariantCultureIgnoreCase) then
+            IncludeFilter
+        else if String.Equals(x, "exclude", StringComparison.InvariantCultureIgnoreCase) then
+            ExcludeFilter
+        else
+            NoFilter
+
+    let (|ClassKind|OrganisationKind|NoKind|) x =
+        if String.Equals(x, "class", StringComparison.InvariantCultureIgnoreCase) then
+            ClassKind
+        else if String.Equals(x, "org", StringComparison.InvariantCultureIgnoreCase)
+             || String.Equals(x, "organisation", StringComparison.InvariantCultureIgnoreCase) then
+            OrganisationKind
+        else
+            NoKind
+
     let rec getFiles dir regex pattern subdirs =
         seq { let files = Directory.EnumerateFiles(dir, pattern)
               let filtered = files |> Seq.filter (fun x -> 
@@ -171,8 +188,8 @@ module Helper =
         match fType with
         | Some x ->
             match x with
-            | "Include" -> input |> List.filter (fun a -> List.exists (comparer a) filter)
-            | "Exclude" -> input |> List.filter (fun a -> List.exists (comparer a) filter |> not)
+            | IncludeFilter -> input |> List.filter (fun a -> List.exists (comparer a) filter)
+            | ExcludeFilter -> input |> List.filter (fun a -> List.exists (comparer a) filter |> not)
             | _ -> input
         | None -> input
 

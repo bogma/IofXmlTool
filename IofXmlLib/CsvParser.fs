@@ -34,7 +34,7 @@ module CsvParser =
             | "0" -> "OK"
             | "1" -> "DidNotStart"
             | "2" -> "DidNotFinish"
-            | "3" -> "MissingPunsh"
+            | "3" -> "MissingPunch"
             | _ -> "unknown"
     
         let getPosition status (pos: string) =
@@ -64,17 +64,28 @@ module CsvParser =
                     getStatus (row.[fields.["status"]])
                 else
                     "NotCompeting"
+            let classId = int row.[fields.["classId"]];
+            let className = row.[fields.["className"]];
+            let classNameShort = row.[fields.["classNameShort"]];
+            let organisationId = int row.[fields.["orgId"]];
+            let organisationName = row.[fields.["orgName"]];
+            let controlCard = row.[fields.["controlCard"]];
+            let givenName = row.[fields.["givenName"]];
+            let familyName = row.[fields.["familyName"]];
+            let position = getPosition status (row.[fields.["position"]]);
+            let time = getTime status (row.[fields.["time"]]);
+
             yield {
-                ClassId = int row.[fields.["classId"]];
-                ClassName = row.[fields.["className"]];
-                ClassNameShort = row.[fields.["classNameShort"]];
-                OrganisationId = int row.[fields.["orgId"]];
-                OrganisationName = row.[fields.["orgName"]];
-                ControlCard = row.[fields.["controlCard"]];
-                GivenName = row.[fields.["givenName"]];
-                FamilyName = row.[fields.["familyName"]];
-                Position = getPosition status (row.[fields.["position"]]);
-                Time = getTime status (row.[fields.["time"]]);
+                ClassId = classId;
+                ClassName = className;
+                ClassNameShort = classNameShort;
+                OrganisationId = organisationId;
+                OrganisationName = organisationName;
+                ControlCard = controlCard;
+                GivenName = givenName;
+                FamilyName = familyName;
+                Position = position;
+                Time = time;
                 Status = status
             }]
 

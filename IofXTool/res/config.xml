@@ -1,6 +1,17 @@
 <!-- supported types: Team, Cup, Sum -->
 <Configuration type="Cup">
-  <!-- showEvents: All, OmitAllMissing, OmitTailMissing -->
+  <!-- name:                   Name of event. Can be used in output template with {{{title}}} -->
+  <!-- year:                   Year when the event takes place. Can be used in output template with {{{year}}} -->
+  <!-- numberOfPlannedEvents:  How many events were originally planned for the cup -->
+  <!-- numberOfValidEvents:    How many events have taken place or are considered to be valid -->
+  <!-- numberOfCountingEvents: Number of results taken into account for each runner -->
+  <!-- calcRule:               Name of the calculation rule to use -->
+  <!-- resultFileRegex:        All, OmitAllMissing, OmitTailMissing -->
+  <!-- recurseSubDirs:         Search also in subdirectory tree for result files -->
+  <!-- includeStatus:          Comma separated list of result states to include in the output -->
+  <!-- eventTitle:              -->
+  <!-- showEvents:             All, OmitAllMissing, OmitTailMissing -->
+  <!-- showCompetitors:        Number of competitors to list per categorie (-1 = all) -->
   <General name="Sportvogl Cup 2016"
            year="2016"
            numberOfPlannedEvents="9"

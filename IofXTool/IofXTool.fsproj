@@ -46,7 +46,7 @@
 
   <ItemGroup>
     <Reference Include="CalcLib">
-      <HintPath>bin\Debug\netcoreapp3.1\CalcLib.dll</HintPath>
+      <HintPath>bin\Debug\net7.0\CalcLib.dll</HintPath>
     </Reference>
   </ItemGroup>
 

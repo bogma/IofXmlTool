@@ -348,6 +348,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
 
             config.PostProcessing.Tasks
                 |> Array.filter (fun x -> x.Active)
+                |> Array.sortBy (fun x -> x.Sequence)
                 |> Array.iter (fun x -> 
                         match x.Name with
                         | "dummy" -> ()

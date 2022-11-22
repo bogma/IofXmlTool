@@ -31,6 +31,10 @@
     "Debug Sum": {
       "commandName": "Project",
       "commandLineArgs": "build --working-directory \"C:\\Users\\Martin\\Documents\\GitHub\\solv_website\\content\\event\\2022\\schcup\"  --config-file \"config_sum.xml\""
+    },
+    "Debug SkiO": {
+      "commandName": "Project",
+      "commandLineArgs": "build --working-directory \"C:\\OL\\events\\2020\\skiol\""
     }
   }
 }
