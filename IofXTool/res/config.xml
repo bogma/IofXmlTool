@@ -1,17 +1,18 @@
-<!-- supported types: Team, Cup, Sum -->
+<!-- Supported types: Team, Cup, Sum -->
 <Configuration type="Cup">
+  <!-- The general section defines the overal settings for the project. -->
   <!-- name:                   Name of event. Can be used in output template with {{{title}}} -->
   <!-- year:                   Year when the event takes place. Can be used in output template with {{{year}}} -->
   <!-- numberOfPlannedEvents:  How many events were originally planned for the cup -->
   <!-- numberOfValidEvents:    How many events have taken place or are considered to be valid -->
   <!-- numberOfCountingEvents: Number of results taken into account for each runner -->
   <!-- calcRule:               Name of the calculation rule to use -->
-  <!-- resultFileRegex:        All, OmitAllMissing, OmitTailMissing -->
-  <!-- recurseSubDirs:         Search also in subdirectory tree for result files -->
-  <!-- includeStatus:          Comma separated list of result states to include in the output -->
+  <!-- resultFileRegex:         -->
+  <!-- recurseSubDirs:         Search also in subdirectory tree for result files. -->
+  <!-- includeStatus:          Comma separated list of result states to include in the output. -->
   <!-- eventTitle:              -->
-  <!-- showEvents:             All, OmitAllMissing, OmitTailMissing -->
-  <!-- showCompetitors:        Number of competitors to list per categorie (-1 = all) -->
+  <!-- showEvents:             Which events shall be shown in the output: All, OmitAllMissing, OmitTailMissing. -->
+  <!-- showCompetitors:        Number of competitors to list per categorie (-1 = all). Can be used to list only the first 3 for example. -->
   <General name="Sportvogl Cup 2016"
            year="2016"
            numberOfPlannedEvents="9"
@@ -25,6 +26,10 @@
            showEvents="All"
            showCompetitors="-1">
   </General>
+  <!-- Preprocessing options for input files. Each input file will be processed by all the task defined here. -->
+  <!-- Supported tasks: fromCSV, toUtf8, toJson. -->
+  <!-- Task will be running in the order of the given 'sequence'. -->
+  <!-- Each task can be activated (true) or deactivated (false). -->
   <PreProcessing>
     <!-- options for input file preprocessing -->
     <Task name="fromCSV" sequence="1" active="true">
@@ -42,6 +47,7 @@
       <Param key="classId">Katnr</Param>
       <Param key="className">Lang</Param>
       <Param key="classNameShort">Kurz</Param>
+      precision
     </Task>
     <Task name="toUtf8" sequence="2" active="true" />
     <Task name="toJson" sequence="3" active="true" />
@@ -87,20 +93,32 @@
     <!-- filter = include ... includes all Organisations listed
          filter = exclude ... excludes all Organisations listed
          any other filter ... use all Organisations in result file -->
-    <!-- if name is "" the name from result file will be used -->
+    <!-- This list of organisations can be used to override the organisation name. -->
+    <!-- if name is "" the name found in the first result file containing the organisation will be used -->
     <Organisation name="ASKÖ Henndorf" id="32" />
     <Organisation name="SSV Hallein-Neualm" id="35" />
     <Organisation name="HBLA Ursprung" id="52" />
     <Organisation name="HSV Wals" id="33" />
   </Organisations>
+  <!-- 3 types of outputs are supported: Html, Pdf, Json -->
+  <!-- Hence: the Pdf output can only be generated if Html output is active. -->
   <Output>
+    <!-- active:    if true the output will be generated -->
+    <!-- fileName:  the output file name -->
+    <!-- cssInline: if true the css will be embedded in the output file, otherwise it's referenced -->
+    <!-- docTemplate: the main template for the html output -->
+    <!-- classTemplate: the template for rendering class results -->
+    <!-- detailsTemplate: the template for rendering the result of a person -->
+    <!-- pageOrientation: Landscape or Portrait (default: Portrait) -->
+    <!-- pageSize: A5, A4, A3 (default: A4) -->
+    <!-- margin*: margin in mm (default: 20) -->
     <Html active="true"
           fileName="cup-2016.html"
           cssInline="true"
-          docTemplate="./resources/document_template.html"
-          classTemplate="./resources/class_template.html"
-          detailsTemplate="./resources/details_template.html"
-          cssFile="./resources/default.css" />
+          docTemplate="./document_template.html"
+          classTemplate="./class_template.html"
+          detailsTemplate="./details_template.html"
+          cssFile="./default.css" />
     <Pdf active="true"
          fileName="cup-2016.pdf"
          pageOrientation="Landscape"
@@ -112,10 +130,14 @@
     <Json active="true" fileName="cup-2016.json" />
   </Output>
   <Names>
+    <!-- This list of name definitions can be used to correct misspelled names. -->
+    <!-- The 'name' attribute contains the name to be shown in the result. -->
+    <!-- The 'aliasFor' attribute contains a list of names that will be replaced with the value of 'name'. -->
     <Name name="Bubu" aliasFor="der Hund, the great"/>
-    <Name name="Tcharly Hackl" aliasFor="Karl Hackl"/>
+    <Name name="John Doe" aliasFor="Jon Doe, John Toe"/>
   </Names>
   <Translations>
+    <!-- Translations of result status. The 'translate' value will be shown in the output. -->
     <Translation key="DidNotFinish" translate="aufg." />
     <Translation key="DidNotStart" translate="n ang." />
     <Translation key="MissingPunch" translate="Fehlst." />

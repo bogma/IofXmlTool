@@ -1,0 +1,96 @@
+<!-- supported types: Team, Cup -->
+<Configuration type="Team">
+    <!-- name:                   Name of event. Can be used in output template with {{{title}}} -->
+    <!-- year:                   Year when the event takes place. Can be used in output template with {{{year}}} -->
+    <!-- numberOfPlannedEvents:  How many events were originally planned for the cup -->
+    <!-- numberOfValidEvents:    How many events have taken place or are considered to be valid -->
+    <!-- numberOfCountingEvents: Number of results taken into account for each runner -->
+    <!-- calcRule:               Name of the calculation rule to use -->
+    <!-- resultFileRegex:        All, OmitAllMissing, OmitTailMissing -->
+    <!-- recurseSubDirs:         Search also in subdirectory tree for result files -->
+    <!-- includeStatus:          Comma separated list of result states to include in the output -->
+    <!-- eventTitle:              -->
+    <!-- showEvents:             All, OmitAllMissing, OmitTailMissing -->
+    <!-- showCompetitors:        Number of competitors to list per categorie (-1 = all) -->
+    <General name="Salzburger Schulcup 2022 - Mannschaftswertung"
+        year="2022"
+        numberOfPlannedEvents="2"
+        numberOfEvents="2"
+        numberOfCountingEvents="2"
+        includeStatus="DidNotFinish, MissingPunch"
+        eventTitle="Schulcup" />
+    <PreProcessing>
+        <!-- options for input file preprocessing -->
+        <Task name="fromCSV" sequence="1" active="true">
+            <Param key="separator">;</Param>
+            <Param key="encoding">iso-8859-1</Param>
+            <Param key="controlCard">Chipnr</Param>
+            <Param key="givenName">Vorname</Param>
+            <Param key="familyName">Nachname</Param>
+            <Param key="notCompeting">AK</Param>
+            <Param key="status">Wertung</Param>
+            <Param key="time">Zeit</Param>
+            <Param key="position">Platz</Param>
+            <Param key="orgId">Club-Nr.</Param>
+            <Param key="orgName">Ort</Param>
+            <Param key="classId">Katnr</Param>
+            <Param key="className">Lang</Param>
+            <Param key="classNameShort">Kurz</Param>
+        </Task>
+        <Task name="toUtf8" sequence="2" active="true" />
+        <Task name="toJson" sequence="3" active="false" />
+    </PreProcessing>
+    <PostProcessing>
+        <!-- options for result postprocessing -->
+        <Task name="sumOrganisations"
+            sequence="10"
+            active="false">
+            <Param key="outputPrefix">Vereine</Param>
+            <!-- sumType: all ... sum up all points from competitors -->
+            <!-- sumType: cup ... sum up cup points from competitors -->
+            <Param key="sumType">all</Param>
+            <Param key="filter">Class</Param>
+            <Param key="filterType">Include</Param>
+            <Param key="filterValue">1,2,3</Param>
+        </Task>
+    </PostProcessing>
+    <Classes filter="exclude">
+        <Class name="Paare" id="7" shortName="" />
+        <Combine classIds="3, 5" name="Unterstufe Herren" shortName="US H" />
+        <Combine classIds="4,6" name="Unterstufe Damen" shortName="US D" />
+    </Classes>
+    <Organisations filter="none">
+        <!-- filter = include ... includes all Organisations listed
+         filter = exclude ... excludes all Organisations listed
+         any other filter ... use all Organisations in result fileName -->
+        <!-- <Organisation name="Name of school" id="6" /> -->
+    </Organisations>
+    <Output>
+        <Html active="true"
+            fileName="./team_result.html"
+            cssInline="true"
+            docTemplate="./team_document_template.html"
+            classTemplate="./team_class_template.html"
+            detailsTemplate="./team_details_template.html"
+            cssFile="./default.css" />
+        <Pdf active="true"
+            fileName="team_result.pdf"
+            pageOrientation="Portrait"
+            pageSize="A4"
+            marginLeft="10"
+            marginTop="20"
+            marginRight="10"
+            marginBottom="20" />
+        <Json active="false"
+            fileName="" />
+    </Output>
+    <Names>
+        <Name name="Bubu" aliasFor="der Hund, the great" />
+        <Name name="John Doe" aliasFor="Jon Doe, John Toe"/>
+    </Names>
+    <Translations>
+        <Translation key="DidNotFinish" translate="aufg." />
+        <Translation key="DidNotStart" translate="n ang." />
+        <Translation key="MissingPunch" translate="Fehlst." />
+    </Translations>
+</Configuration>
