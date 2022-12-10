@@ -35,10 +35,10 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
         let resultFileRegex = config.General.ResultFileRegex |> Option.defaultValue ""
         let virtualClasses = config.Classes.Combines
                             |> Array.toList
-                            |> List.map (fun x -> 
-                                { 
+                            |> List.map (fun x ->
+                                {
                                     Id = XmlResult.Id(None, x.ClassIds)
-                                    Name = x.Name; 
+                                    Name = x.Name;
                                     ShortName = x.ShortName |> Option.defaultValue "";
                                     Classes = x.ClassIds.Split[|','|]
                                               |> Array.toList
@@ -56,7 +56,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
 
         let buildTeam (e1 : ParsedResult, e2 : ParsedResult, e3 : ParsedResult) =
             let sum = e1.Time + e2.Time + e3.Time
-            let ne1 = { Name = setName (e1.GivenName + " " + e1.FamilyName); Time = e1.Time } 
+            let ne1 = { Name = setName (e1.GivenName + " " + e1.FamilyName); Time = e1.Time }
             let ne2 = { Name = setName (e2.GivenName + " " + e2.FamilyName); Time = e2.Time }
             let ne3 = { Name = setName (e3.GivenName + " " + e3.FamilyName); Time = e3.Time }
             { OrganisationId = e1.OrganisationId; TotalTime = sum; TeamMembers = [ne1; ne2; ne3] }
@@ -97,7 +97,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     | None ->
                         tracer.Error "Calculation strategy '%s' not found." rule
                         0m
-                { 
+                {
                     OrganisationId = item.OrganisationId;
                     Name = setName (item.GivenName + " " + item.FamilyName);
                     Points = Math.Round(points, 2);
@@ -113,9 +113,9 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                     |> List.map (fun a -> { a with ClassId = combineClasses a.ClassId })
                     |> Seq.groupBy (fun i -> i.ClassId.Value)
                     |> Seq.map (fun (clId, clRes) ->
-                                        let validResults = clRes 
+                                        let validResults = clRes
                                                             |> Seq.filter (fun x -> x.Status = "OK")
-                                        let winningTime = 
+                                        let winningTime =
                                             if (validResults |> Seq.isEmpty) then 0.0
                                             else validResults
                                                     |> Seq.map (fun x -> x.Time)
@@ -124,8 +124,8 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                                                 |> Seq.sortBy (fun x -> x.Time)
                                                                 |> Seq.groupBy (fun x -> x.Time)
                                         let cupPositions = getPositionSeq 1 (getIntervalList timeGroupedRes)
-                                        let res = (cupPositions, timeGroupedRes) 
-                                                        ||> Seq.map2 (fun i1 i2 -> snd i2 
+                                        let res = (cupPositions, timeGroupedRes)
+                                                        ||> Seq.map2 (fun i1 i2 -> snd i2
                                                                                     |> Seq.map (fun item -> calcSingleResult (decimal winningTime) item i1))
                                         let includeStatus = (config.General.IncludeStatus |> Option.defaultValue "").Replace(" ", "").Split ','
                                         let others = clRes
@@ -142,7 +142,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         XmlResult.Id (None, string clId), Seq.append (flattenSeqOfSeq res) others)
             eventInfo, r
 
-        let events = 
+        let events =
             match config.Type with
             | "Cup" | "Sum" -> getEventInfos config cArgs.wDir |> List.toSeq
             | "Team" ->
@@ -154,7 +154,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                 | None ->
                     tracer.Warn "input file not found"
                     Seq.empty
-            | _ -> 
+            | _ ->
                 tracer.Error "no valid cup type given. please check your configuration file."
                 Seq.empty
 
@@ -218,10 +218,10 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let x =
                                             r
                                             |> Seq.sortBy (fun (_, _, prr) -> -prr.Points)
-                                            |> Seq.mapi (fun i (a, b, c) -> 
+                                            |> Seq.mapi (fun i (a, b, c) ->
                                                             let counts = i < numberOfCountingEvents
                                                             { EventDetails = a; ClassId = b; PRR = c; ResultCounts = counts; })
-                                        let sum = 
+                                        let sum =
                                             countingResults
                                             |> Seq.sumBy (fun (_, _, prr) -> prr.Points)
                                         { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalPoints = sum; Results = x; EventInfos = events |> Seq.toList })
@@ -240,16 +240,16 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         let disq = not (eventsOk = numberOfValidEvents)
                                         { PersonName = prr.Name; ClassId = catId; OrganisationId = prr.OrganisationId; TotalTime = sum; TimeBehind = 0.0; Disq = disq; Results = x; EventInfos = events |> Seq.toList })
                         |> Seq.groupBy (fun x -> x.ClassId)
-                        |> Seq.map (fun (_, clRes) -> 
+                        |> Seq.map (fun (_, clRes) ->
                                         let validResults = clRes |> Seq.filter (fun x -> not x.Disq)
-                                        let winningTime = 
+                                        let winningTime =
                                             if (validResults |> Seq.isEmpty) then 0.0
                                             else validResults
                                                    |> Seq.map (fun x -> x.TotalTime)
                                                    |> Seq.min
-                                        clRes 
+                                        clRes
                                         |> Seq.map (fun x ->
-                                            let diff = 
+                                            let diff =
                                                 if x.Disq then 0.0
                                                 else x.TotalTime - winningTime
                                             { PersonName = x.PersonName; ClassId = x.ClassId; OrganisationId = x.OrganisationId; TotalTime = x.TotalTime; TimeBehind = diff; Disq = x.Disq; Results = x.Results; EventInfos = events |> Seq.toList }))
@@ -263,7 +263,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                         |> Seq.filter (fun x -> x.Status = "OK")
                         |> Seq.groupBy (fun i -> i.ClassId)
                         |> Seq.map (fun (clId, clRes) ->
-                                        let validResults = clRes 
+                                        let validResults = clRes
                                                            |> Seq.groupBy (fun x -> x.OrganisationId.Value)
                                                            |> Seq.map (fun (o,x) -> o, x |> Seq.sortBy (fun x -> x.Time))
                                                            |> Seq.map (fun (o,x) -> o, x |> Seq.toList |> triple)
@@ -275,13 +275,13 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                                         clId, validResults)
                 Some (TeamResult r)
             | _ -> None
- 
+
         match res with
         | Some r ->
             let orgInfos = extractOrganisationInfo competitions |> Seq.toList
             let classInfos = extractClassInfo competitions |> Seq.toList
             let virtualClassIdNameInfo = virtualClasses |> List.map (fun x -> { Id = x.Id; Name = x.Name; ShortName = x.ShortName })
-            
+
             let data = {
                 InputPath = cArgs.wDir;
                 Config= config;
@@ -331,7 +331,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                         let consoleOut = Console.Out
                         Console.SetOut(TextWriter.Null)
                         let doc = PdfGenerator.GeneratePdf(File.ReadAllText(htmlInputFile), pdfConfig);
-                    
+
                         // enable logging again
                         Console.SetOut(consoleOut)
                         doc.Save(outputFile)
@@ -349,7 +349,7 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
             config.PostProcessing.Tasks
                 |> Array.filter (fun x -> x.Active)
                 |> Array.sortBy (fun x -> x.Sequence)
-                |> Array.iter (fun x -> 
+                |> Array.iter (fun x ->
                         match x.Name with
                         | "dummy" -> ()
                         | "sumOrganisations" ->

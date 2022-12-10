@@ -49,7 +49,7 @@ module PreProcessors =
         try
             if (isNewer inputFile outputFile) then
                 let res = parseResultCsv csvParams csvParams.["separator"] csvParams.["encoding"] inputFile
-            
+
                 let grouped = res |> List.groupBy (fun i -> i.ClassId)
 
                 let currentTime = DateTime.UtcNow.ToString("s")
@@ -103,7 +103,7 @@ module PreProcessors =
                 xws.Encoding <- Encoding.UTF8
                 use xw = XmlWriter.Create(outputFile, xws)
                 doc.WriteTo(xw)
-            
+
                 tracer.Info "CSV parsed: %d entries" res.Length
             else
                 tracer.Debug "no need to process CSV %s" inputFile
