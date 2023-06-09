@@ -56,4 +56,8 @@
         if p &lt; 0m then 0m
         else p
   </Rule>
+  <Rule Name="indirect" Formatting="%.2f">
+    let calcIndirect winningTime time _ =
+        (winningTime / time) * 100m
+  </Rule>
 </CalculationRules>
