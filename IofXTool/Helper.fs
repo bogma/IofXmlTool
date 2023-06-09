@@ -131,7 +131,7 @@ let getOrderedClassList classList presentationOrder =
         if presentationOrder = "" then
             List.Empty
         else
-            presentationOrder.Split[|','|]
+            presentationOrder.Split[|';'|]
             |> Array.toList
             |> List.map (fun y -> y.Trim())
             |> List.map (fun y -> XmlResult.Id(None, y))

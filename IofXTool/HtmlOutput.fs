@@ -184,12 +184,19 @@ let buildResultHtml data =
                 |> Seq.groupBy (fun cupResult -> cupResult.ClassId.Value)
                 |> Seq.map (fun (x,y) -> XmlResult.Id (None, string x),y)
 
+            let classList =
+                classResults
+                |> Seq.map(fun (x,_) -> x)
+                |> Seq.toList
+
+            let orderedClassList = getOrderedClassList classList (data.Config.Classes.PresentationOrder |> Option.defaultValue "")
+
             let catRes =
-                [ for cfg in data.ClassInfo do
-                    let exists = classResults |> Seq.exists(fun (catId, _) -> isSame catId cfg.Id)
+                [ for cl in orderedClassList do
+                    let exists = classResults |> Seq.exists(fun (catId, _) -> isSame catId cl)
                     if exists then
                         let i, catResult = classResults 
-                                           |> Seq.find(fun (catId, _) -> isSame catId cfg.Id)
+                                           |> Seq.find(fun (catId, _) -> isSame catId cl)
                         let invalid = catResult |> Seq.filter (fun x -> x.Disq) |> Seq.map (fun x -> 0, x)
                         let valid = recalcSumPositions catResult
                         let showCompetitors = data.Config.General.ShowCompetitors |> Option.defaultValue 0
