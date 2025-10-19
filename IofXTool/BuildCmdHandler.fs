@@ -256,10 +256,12 @@ let build (cArgs:CommonArgs) (args : ParseResults<_>) =
                         |> flattenSeqOfSeq
                 Some (SumResult v)
             | "Team" ->
+                let includeStatus = (config.General.IncludeStatus |> Option.defaultValue "").Replace(" ", "").Split ','
                 let r = parseResultXml (competitions |> Seq.head) Array.empty
                         |> filter config.Organisations.Filter (orgCfg |> List.map (fun x -> x.Id)) isSameOrg
                         |> filter config.Classes.Filter (classCfg |> List.map (fun x -> x.Id)) isSameClass
                         |> List.map (fun pr -> { pr with ClassId = combineClasses pr.ClassId })
+                        //|> Seq.filter (fun x -> includeStatus |> Array.exists (fun y -> y = x.Status))
                         |> Seq.filter (fun x -> x.Status = "OK")
                         |> Seq.groupBy (fun i -> i.ClassId)
                         |> Seq.map (fun (clId, clRes) ->
